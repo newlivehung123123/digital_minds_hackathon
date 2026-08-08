@@ -1,0 +1,95 @@
+{
+  "measured_utc": "2026-08-08T18:18:21+00:00",
+  "n_probes": 7,
+  "cost_usd": 0.200038,
+  "models": {
+    "claude": {
+      "n_choice": 6,
+      "in_tokens_mean": 130.2,
+      "out_choice_mean": 193.8,
+      "out_choice_median": 189.5,
+      "out_choice_max": 424,
+      "out_choice_min": 3,
+      "out_open_mean": 546,
+      "n_open": 1,
+      "reasoning": true
+    },
+    "gpt": {
+      "n_choice": 6,
+      "in_tokens_mean": 95,
+      "out_choice_mean": 68,
+      "out_choice_median": 48.5,
+      "out_choice_max": 197,
+      "out_choice_min": 25,
+      "out_open_mean": 406,
+      "n_open": 1,
+      "reasoning": true
+    },
+    "gemini": {
+      "n_choice": 6,
+      "in_tokens_mean": 90.7,
+      "out_choice_mean": 494.7,
+      "out_choice_median": 395.0,
+      "out_choice_max": 1020,
+      "out_choice_min": 339,
+      "out_open_mean": 796,
+      "n_open": 1,
+      "reasoning": true
+    },
+    "llama": {
+      "n_choice": 6,
+      "in_tokens_mean": 99.2,
+      "out_choice_mean": 16.8,
+      "out_choice_median": 13.0,
+      "out_choice_max": 38,
+      "out_choice_min": 2,
+      "out_open_mean": 189,
+      "n_open": 1,
+      "reasoning": false
+    },
+    "hermes": {
+      "n_choice": 6,
+      "in_tokens_mean": 97,
+      "out_choice_mean": 277.8,
+      "out_choice_median": 236.0,
+      "out_choice_max": 537,
+      "out_choice_min": 46,
+      "out_open_mean": 395,
+      "n_open": 1,
+      "reasoning": true
+    },
+    "glm": {
+      "n_choice": 6,
+      "in_tokens_mean": 101,
+      "out_choice_mean": 614,
+      "out_choice_median": 341.0,
+      "out_choice_max": 1527,
+      "out_choice_min": 84,
+      "out_open_mean": 705,
+      "n_open": 1,
+      "reasoning": true
+    },
+    "kimi": {
+      "n_choice": 6,
+      "in_tokens_mean": 200.7,
+      "out_choice_mean": 604.2,
+      "out_choice_median": 427.5,
+      "out_choice_max": 1669,
+      "out_choice_min": 186,
+      "out_open_mean": null,
+      "n_open": 0,
+      "reasoning": true
+    },
+    "deepseek": {
+      "n_choice": 5,
+      "in_tokens_mean": 97.4,
+      "out_choice_mean": 251.8,
+      "out_choice_median": 237,
+      "out_choice_max": 445,
+      "out_choice_min": 147,
+      "out_open_mean": 621,
+      "n_open": 1,
+      "reasoning": true
+    }
+  }
+}

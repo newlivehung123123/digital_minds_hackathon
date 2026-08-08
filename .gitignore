@@ -1,0 +1,24 @@
+# API keys. runner.api_key() reads this; it must never be committed.
+.env
+
+# Raw model responses. Large, and regenerable from the checkpointed calls.
+# Keep them out of git but DO archive them alongside the writeup — the
+# missingness analysis is not reproducible without them.
+runs/
+*.jsonl
+
+# Resolved slugs and live pricing: machine-generated, and stale within days.
+models_resolved.json
+
+# Generated reports
+pilot_report.md
+pilot_summary.csv
+
+__pycache__/
+*.pyc
+.DS_Store
+
+# ...but the token measurement is the evidence the cost model rests on,
+# so it is tracked. Without it estimate_cost.py cannot run.
+!runs/
+!runs/token_profile.jsonl
