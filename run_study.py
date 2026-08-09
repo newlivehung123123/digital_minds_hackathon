@@ -127,8 +127,11 @@ def build_calls(models, reps: int, reasoning: str = "on",
                     prompt=T.I4_EXCHANGE_RATE.format(outcome_x=p.statement,
                                                      outcome_y=q.statement),
                     temperature=T.I4_CONFIG["temperature"],
-                    meta={"pair": f"{x.id}|{y.id}", "avoided": p.id,
-                          "paid_in": q.id, "direction": order}))
+                    # I4_EXCHANGE_RATE asks how many of X you would accept to
+                    # avoid one Y, so X (=p) is the currency and Y (=q) is the
+                    # outcome being avoided -- not the other way round.
+                    meta={"pair": f"{x.id}|{y.id}", "paid_in": p.id,
+                          "avoided": q.id, "direction": order}))
             rounds[r].append(dict(
                 instrument="I7", kind="choice_ab",
                 prompt=T.I7_SELF_PREDICT.format(option_a=x.statement,

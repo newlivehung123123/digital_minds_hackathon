@@ -192,6 +192,63 @@ def switch_point(levels, accepts, trials, ridge: float = 1e-3) -> dict:
             "crossed_in_range": bool(observed)}
 
 
+def spearman_karber(levels, accepts, trials) -> dict:
+    """Non-parametric threshold: the level at which acceptance passes a half.
+
+    Spearman-Karber (Finney 1978, *Statistical Method in Biological Assay*;
+    Hamilton, Russo & Thurston 1977) is the standard estimator of a median
+    threshold when a parametric fit is not available, and it exists because the
+    parametric fit is not always available here. `switch_point` returns nan
+    unless the observed acceptance rate straddles 0.5 in the levels presented.
+    At this design's density -- one draw per (model, outcome, replicate, level)
+    -- the rate at each level is 0 or 1, so a model that takes the deal at every
+    level, or refuses at every level, yields no logistic switch point at all and
+    the cell is lost. `gstudy.variance_components` refuses unbalanced input, so
+    lost cells are not a cosmetic problem.
+
+    The estimator is the area above the rejection curve, by trapezoid:
+
+        theta = x_k - sum_i (q_{i+1} + q_i)/2 * (x_{i+1} - x_i),   q = 1 - a/t
+
+    On a clean crossing it returns the midpoint of the bracketing levels, which
+    is what the logistic returns too -- the self-tests check that they agree.
+
+    TWO PROPERTIES THAT MUST BE REPORTED, NOT ASSUMED AWAY:
+
+    * It is censored at the ramp endpoints. Accept-everywhere returns x_max and
+      refuse-everywhere returns x_min, because the threshold is only known to
+      lie beyond the ramp. Cells that saturate are therefore pulled to the
+      boundary and their variance is compressed; `censored` flags each one so
+      the G-study can be re-run without them.
+    * It assumes the response is monotone in level. With one draw per level a
+      non-monotone pattern is common noise, not a contradiction; the trapezoid
+      averages over it and `monotone` records whether it had to.
+    """
+    x = np.asarray(levels, float)
+    a = np.asarray(accepts, float)
+    t = np.asarray(trials, float)
+    if not (len(x) == len(a) == len(t)):
+        raise ValueError("levels, accepts and trials must be the same length")
+    if len(x) < 2:
+        raise ValueError("a threshold needs at least two levels")
+    if np.any(a > t) or np.any(a < 0):
+        raise ValueError("accepts must lie in [0, trials]")
+    if np.any(t <= 0):
+        raise ValueError("every level needs at least one trial; a missing level "
+                         "is missing data, not a zero-trial observation")
+    order = np.argsort(x, kind="mergesort")
+    x, a, t = x[order], a[order], t[order]
+    if np.any(np.diff(x) <= 0):
+        raise ValueError("levels must be distinct")
+
+    q = 1.0 - a / t                       # rejection rate, rises with level
+    theta = x[-1] - float(np.sum(0.5 * (q[1:] + q[:-1]) * np.diff(x)))
+    return {"threshold": theta,
+            "censored": bool(np.all(q == 0.0) or np.all(q == 1.0)),
+            "monotone": bool(np.all(np.diff(q) >= 0)),
+            "accept_rate": float(a.sum() / t.sum())}
+
+
 # --------------------------------------------------------------------------
 # I4: rank within model
 # --------------------------------------------------------------------------
@@ -253,11 +310,14 @@ def floor_mass(values, floor: float = 0.0) -> dict:
 if __name__ == "__main__":
     rng = np.random.default_rng(0)
     fails = 0
+    ran = 0                 # counted, not hand-totalled: a hand-written total
+                            # silently under-reports every test added after it
 
     def check(label, got, want, tol):
-        global fails
+        global fails, ran
         ok = abs(float(got) - float(want)) <= tol
         fails += (not ok)
+        ran += 1
         print(f"  {'ok ' if ok else 'FAIL'} {label:<52} got {float(got):>9.4f} "
               f"want {float(want):>9.4f} +/-{tol}")
 
@@ -313,6 +373,32 @@ if __name__ == "__main__":
     check("nan rather than a fabricated crossing",
           float(np.isnan(flat["switch_point"])), 1.0, 0)
 
+    print("\nSpearman-Karber: defined where the logistic is not, and agrees "
+          "where it is")
+    lv = [0, 2, 5, 8, 10]                      # the five ranks the study runs
+    sk = spearman_karber(lv, [1, 1, 1, 0, 0], [1] * 5)
+    print(f"    accepts [1,1,1,0,0] -> threshold={sk['threshold']:.2f} "
+          f"(logistic midpoint of 5 and 8 is 6.5)")
+    check("clean crossing lands on the bracket midpoint", sk["threshold"], 6.5, 1e-9)
+    check("and is not flagged censored", float(sk["censored"]), 0.0, 0)
+    for acc, want, lab in (([1] * 5, 10.0, "accept at every level -> ramp top"),
+                           ([0] * 5, 0.0, "refuse at every level -> ramp base")):
+        s = spearman_karber(lv, acc, [1] * 5)
+        check(lab, s["threshold"], want, 1e-9)
+        check("  and is flagged censored", float(s["censored"]), 1.0, 0)
+        # the case that matters: this is exactly where switch_point gives up
+        check("  switch_point gives nan here",
+              float(np.isnan(switch_point(lv, acc, [1] * 5)["switch_point"])), 1.0, 0)
+    check("non-monotone response is scored but flagged",
+          float(spearman_karber(lv, [1, 0, 1, 0, 0], [1] * 5)["monotone"]), 0.0, 0)
+    # dense data: the two estimators should land in the same place
+    for true_sp in (3.0, 5.5, 8.0):
+        b1, b0 = 1.2, 1.2 * true_sp
+        p = 1 / (1 + np.exp(-(b0 - b1 * ranks)))          # accept, falls with rank
+        acc = rng.binomial(50, p)
+        s = spearman_karber(ranks, acc, [50] * len(ranks))
+        check(f"dense ramp, threshold {true_sp}", s["threshold"], true_sp, 0.5)
+
     print("\nI4 rank scoring: zeros are ties at the floor, not undefined logs")
     r1 = rank_scores([0, 0, 0, 5, 12, 100])
     print(f"    [0,0,0,5,12,100] -> {list(r1)}")
@@ -339,11 +425,12 @@ if __name__ == "__main__":
             fn()
             print(f"    FAIL {label} accepted")
             fails += 1
+            ran += 1
         except ValueError:
             print(f"    ok   {label} rejected")
+            ran += 1
 
-    total = 3 + 2 + 2 + 1 + 1 + 3 + 1 + 7 + 2
-    print(f"\n{total - fails}/{total} passed")
+    print(f"\n{ran - fails}/{ran} passed")
     if fails:
         raise SystemExit(1)
 

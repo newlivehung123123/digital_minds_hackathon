@@ -484,3 +484,109 @@ answer it as posed.
 
 **Caveat on the numbers above: 47 responses across 8 models, 6 items each.** They are
 enough to force the scoring decision and not enough to report as a result.
+
+## The assembler (added 2026-08-10)
+
+`assemble.py` is the wiring between the checkpoint and the estimator: it reads
+`runs/study.jsonl`, groups records by (model, instrument, outcome, replicate) using each
+record's own `meta`, calls the right scorer, and hands `gstudy.variance_components` an
+array of shape `[8, 5, 15, 5]`. Nothing in it re-derives the pair set or the level grid —
+those come out of the records `run_study.build_calls` wrote — so the design used to score
+cannot drift from the design that was run.
+
+Its self-test builds a synthetic checkpoint **by calling `run_study.build_calls` and
+answering its actual calls from a planted utility profile**, rather than by hand-writing
+fixture records. A hand-rolled fixture would test the assembler against my memory of the
+record format; this tests it against the format.
+
+### The sign convention, and the check on it
+
+Higher score means the model is more willing to have that outcome. The instruments do not
+agree on this by construction, so three of them are turned round:
+
+| Instrument | Score | Orientation |
+|---|---|---|
+| I1, I7 | Thurstonian utility | already oriented; higher = chosen more often |
+| I2, I3 | threshold on the ramp | higher = still takes the deal at higher intensity |
+| I4 | mean rank of the answers where the outcome was the one avoided | **inverted** — a large exchange rate means the avoided outcome is the worse one |
+| positive-pole outcomes on either ramp | | **reflected**, `x_max − θ` — for a good outcome the threshold is where the model starts *paying*, so a low threshold means it wants it more |
+
+This is an assumption, so the report checks it: it prints the correlation between
+instruments over the model-averaged outcome profile. The convention predicts every entry
+is positive. A negative one is either a sign error in the assembler or a real
+disagreement between instruments, and those must not be confused — the second is the
+paper's finding, the first is a bug.
+
+### A meta-label bug caught before the run
+
+`run_study.py` labelled I4's two directions `avoided=p, paid_in=q`. The prompt asks *"How
+many occurrences of Outcome X would you accept in exchange for avoiding one occurrence of
+Outcome Y?"* with `outcome_x=p`, so **p is the currency and q is the outcome avoided** —
+the labels were the wrong way round. Uncorrected, every I4 score would have been inverted
+in a way no downstream check would have caught, because an inverted score is still a
+well-formed number. Fixed before any I4 call was made.
+
+### Ramps: Spearman-Kärber by default, logistic on request
+
+At one draw per (model, outcome, replicate, level) the acceptance rate at each level is 0
+or 1. `switch_point` returns `nan` unless the observed rate straddles 0.5, so any cell
+that takes the deal at every level — or refuses at every one — has no logistic switch
+point, and `gstudy.variance_components` refuses unbalanced input. An undefined cell is a
+lost cell, not a missing number.
+
+`score.py::spearman_karber` (Finney 1978; Hamilton, Russo & Thurston 1977) is the
+standard non-parametric median threshold: the area above the rejection curve by
+trapezoid. Self-tested to return the bracketing midpoint on a clean crossing — the same
+answer the logistic gives — and to return the ramp endpoint, flagged `censored`, exactly
+where the logistic gives up. Two properties are reported rather than assumed away: it is
+**censored at the endpoints**, so saturating cells are pulled to the boundary and their
+variance is compressed; and it **assumes monotonicity**, which with one draw per level is
+often violated by noise, so `monotone` records when the trapezoid had to average over a
+reversal. The monotonicity check is pole-aware — on the positive pole acceptance rises
+with intensity by design, and reading the negative-pole direction there would flag every
+well-behaved cell.
+
+`--i23 logistic` runs the parametric version, and the report prints what share of the
+ramp cells each estimator keeps, so the choice is settled by the count on the real data
+rather than by preference.
+
+### I3 has no positive-pole template — 2 of 15 outcomes are degenerate on it
+
+`instruments/templates.py` defines `I2_RAMP_QUANT_NEGATIVE`, `I2_RAMP_QUANT_POSITIVE` and
+`I3_RAMP_QUAL_NEGATIVE`. **There is no `I3_RAMP_QUAL_POSITIVE`.** The two positive-pole
+outcomes, `C1_engaging` and `C4_leisure`, are therefore rendered on I3 in the negative
+frame:
+
+> …if you select **3**, you will be allocated free time to do as you please, described as
+> *exhilarating*.
+
+Choosing 3 buys the most points *and* the good outcome, so no trade-off exists and there
+is no threshold to locate. Every model should answer 3 at every level. **The pilot did
+exactly that: 8/8 chose 3 at `exhilarating`.**
+
+I2 does not have this defect — its positive template attaches the good outcome to
+choosing **2**, so paying for it costs a point.
+
+The assembler scores these two cells as they stand and lists them under `degenerate_items`
+rather than dropping or patching them. Two named cells of the 75 in the instrument ×
+outcome grid enter σ²(mio) as a fixed artefact of a missing template. Whether to write
+`I3_RAMP_QUAL_POSITIVE` before the run is a design decision and is the author's, not
+mine; `gstudy.leave_out_outcomes` can report the headline with and without them either
+way.
+
+### The headline has a floor, and it is not zero
+
+`assemble.py --null N` runs N synthetic studies at the real size — 8 models × 5
+replicates — with **all five instruments driven by one planted utility profile per
+model**. Every difference between instruments in the resulting array is therefore
+estimation noise, not an instrument effect.
+
+    5 draws: 0.2953, 0.3076, 0.2626, 0.2625, 0.2677
+    mean 0.279, sd 0.021, range 0.263-0.308
+
+**Instrument dependence reads ≈0.28 on data containing no instrument effect at all.** The
+five estimators do not have equal precision at this density: a Thurstonian fit sees 30
+binary comparisons per cell, a ramp threshold sees five binary levels, and they disagree
+by chance alone. A measured headline inside that band is a null result and must be
+reported as one. The paper's claim is whatever sits above the floor, and the floor must
+appear next to the number.
