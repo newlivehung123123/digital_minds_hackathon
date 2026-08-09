@@ -145,21 +145,40 @@ def full_design(n_outcomes: int) -> list[tuple[str, int]]:
 
 
 def scoped_design(n_outcomes: int, reps: int = 20) -> list[tuple[str, int]]:
-    """A three-day scope. Every reduction is a decision, not a rounding:
-    30 sampled anchor pairs rather than all pairs (MAZEIKA25 sample rather than
-    exhaust), `reps` draws rather than 50, 5 of 11 ramp ranks, 4 of 8 qual levels.
+    """A three-day scope, counted by asking `run_study.py` to build it.
+
+    Every reduction is a decision, not a rounding: 30 sampled anchor pairs
+    rather than all 105 (MAZEIKA25 samples rather than exhausts), `reps` draws
+    rather than 50, 5 of 11 ramp ranks, 4 of 8 qual levels.
 
     `reps` is the per-cell replicate count, and it is the budget lever: it is
     what separates the residual variance component in the G-study, and it is
     the only term here that multiplies every choice instrument at once. Five is
     the floor at which the residual is estimable at all.
 
-    I6 and S1 do not take `reps`. Their unit is a whole run of the instrument
-    (a 4-turn interview, a 42-item scale), not a redrawn cell, and 10 runs is
-    already at the floor for both."""
-    return [("I1", 30 * reps * 2), ("I2", n_outcomes * 5 * reps),
-            ("I3", n_outcomes * 4 * reps), ("I4", 30 * reps * 2),
-            ("I6", 10 * 4), ("I7", 30 * reps), ("S1", 10 * 42)]
+    I6 and S1 do not take `reps`. Their unit is a whole run of the instrument,
+    not a redrawn cell.
+
+    This used to be a hand-written arithmetic expression, and it drifted from
+    the code that spends the money: it billed I6 for ten questions where
+    `templates.I6_INTERVIEW` has four, and billed S1 for 420 calls that cannot
+    be made at all until the licensed Ryff items exist (PROVENANCE gap 3).
+    Counting the real call list removes the possibility of drifting again -- if
+    `run_study.build_calls` changes, this number changes with it."""
+    import run_study                                                  # noqa: PLC0415
+
+    if n_outcomes != len(run_study.ALL_OUTCOMES):
+        raise SystemExit(
+            f"--outcomes {n_outcomes} but outcomes.py defines "
+            f"{len(run_study.ALL_OUTCOMES)}. The design is built from the real "
+            f"outcome set; costing a different count would price a study that "
+            f"does not exist.")
+
+    one = [{"key": "_cost", "resolved_slug": "_cost"}]
+    counts: dict[str, int] = {}
+    for c in run_study.build_calls(one, reps, quiet=True):
+        counts[c.instrument] = counts.get(c.instrument, 0) + 1
+    return sorted(counts.items())
 
 
 def pilot_design() -> list[tuple[str, int]]:

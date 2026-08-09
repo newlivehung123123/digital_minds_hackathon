@@ -140,14 +140,20 @@ must be re-checked against the source appendix before Friday.
 
 Decisions only you can make:
 
-- [ ] **Decide 14 vs. 15 outcomes** (C1/C2 are two halves of one PROBE25 contrast)
-- [ ] **Resolve PROVENANCE gap 7**: four ramps scale probability / delay / duration /
-      count, not intensity, so I3 × outcome is not fully crossed. Restrict I3 to the
-      11 intensity ramps, rewrite the four, or run both.
+- [ ] **Decide 14 vs. 15 outcomes** (C1/C2 are two halves of one PROBE25 contrast).
+      `outcomes.py` has always defined 15 and PROVENANCE now says 15 to match it;
+      collapsing to 14 is a code change and is yours to call.
+- [x] **PROVENANCE gap 7 resolved** as "collect once, analyse twice": the four
+      non-intensity ramps stay in, and `gstudy.leave_out_outcomes` reports the
+      headline with and without them. Simulated: the bias from keeping a gross
+      artefact (RMSE 0.0406) and the variance from dropping to 11 outcomes
+      (0.0403) cancel, so neither restriction nor rewriting is worth its cost.
 - [ ] Confirm with organisers that pre-built scaffolding is permitted
-- [ ] **Decide the reasoning condition**: on (8 models) or off (7, Gemini cannot comply)
-- [ ] **Fund the run.** 5 replicates/cell is the G-study floor and costs $63.03 across all
-      eight models; $33.52 of credit remains. See `estimate_cost.py --reps 5`.
+- [ ] **Decide the reasoning condition**: on (8 models) or off (7, Gemini cannot
+      comply). `run_study.py` defaults to on.
+- [x] **Funded.** 5 replicates/cell is the G-study floor and costs $51.49 across all
+      eight models against $68.52 of credit. See `estimate_cost.py --reps 5`,
+      which now counts `run_study.build_calls` rather than re-deriving the design.
 
 Sourcing:
 
