@@ -9,7 +9,11 @@ that presumes one source of error (Cronbach, Gleser, Nanda & Rajaratnam 1972;
 Brennan 2001; Shavelson & Webb 1991).
 
 THE DESIGN. Models (m) x instruments (i) x outcomes (o), fully crossed, with r
-replicates in each cell. In G-theory notation the model is the object of
+replicates in each cell. The instrument facet has FIVE levels, not eight: only
+I1, I2, I3, I4 and I7 yield a score per outcome. I6's interview questions are
+not outcome-indexed, S1 measures a state rather than a preference over
+outcomes, and I5 was never implemented; all are collected and reported, but
+none is a level of this facet (see score.py). In G-theory notation the model is the object of
 measurement and instrument and outcome are facets of generalization, so this is
 an m x i x o random-effects design with replicates nested within cells:
 
@@ -528,11 +532,13 @@ if __name__ == "__main__":
         print("  ok  n_r=1 rejected: mio and residual are confounded")
 
     # 8. Degrees of freedom in the design we actually plan to run.
-    print("\ndegrees of freedom, planned design (8 models, 7 instruments, "
+    print("\ndegrees of freedom, planned design (8 models, 5 instruments, "
           "15 outcomes, 5 reps)")
-    d = design_df(8, 7, 15, 5)
+    # 5, not 8: only I1 I2 I3 I4 I7 yield a per-outcome preference score.
+    # I6 is not outcome-indexed and S1 measures a state; see score.py.
+    d = design_df(8, 5, 15, 5)
     check("sigma2(mo) is well determined", float(d["mo"]), 98.0, 0.0)
-    check("sigma2(mio) is well determined", float(d["mio"]), 588.0, 0.0)
+    check("sigma2(mio) is well determined", float(d["mio"]), 392.0, 0.0)
     check("sigma2(m) is NOT (8 models -> 7 df)", float(d["m"]), 7.0, 0.0)
 
     # 9. Leave-out sensitivity (PROVENANCE gap 7). With no artefact planted,

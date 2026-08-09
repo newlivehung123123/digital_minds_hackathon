@@ -368,19 +368,28 @@ and σ²(m) **by construction**. That is intended: both are artefacts of units, 
 findings. It must be stated in the writeup, because it means this design cannot report a
 model main effect or an instrument main effect at all.
 
-**What the planned design can and cannot support.** Degrees of freedom at 8 models × 7
+**The instrument facet has five levels, not eight.** Only I1, I2, I3, I4 and I7 yield a
+score per outcome. I6's interview questions are not outcome-indexed; S1 measures a state
+rather than a preference over outcomes; I5 was never implemented. All are collected and
+reported — S1 in particular is the study's one state instrument and is evidence about
+something else — but none is a level of the G-study's instrument facet. Coercing them in
+would fabricate a crossing that was never measured. `score.py` is where this is enforced.
+
+**What the planned design can and cannot support.** Degrees of freedom at 8 models × 5
 instruments × 15 outcomes × 5 replicates:
 
 | component | df | |
 |---|---|---|
 | σ²(m) | 7 | thin — may come back negative |
-| σ²(i) | 6 | thin |
+| σ²(i) | 4 | thin |
 | σ²(o) | 14 | thin |
-| σ²(mi) | 42 | |
+| σ²(mi) | 28 | |
 | σ²(mo) | 98 | **the preference signal** |
-| σ²(io) | 84 | |
-| σ²(mio) | 588 | **the instrument effect — the headline** |
-| residual | 3,360 | |
+| σ²(io) | 56 | |
+| σ²(mio) | 392 | **the instrument effect — the headline** |
+| residual | 2,400 | |
+
+σ²(mo) does not depend on the instrument count and is unchanged at 98.
 
 The thin terms are not the quantity of interest. σ²(mo) and σ²(mio) carry 98 and 588 df,
 so the model-vs-instrument split this paper is about is the part the design estimates
@@ -401,3 +410,39 @@ instrument, so dropping missing cells would bias the very interaction being esti
 `complete_case()` exists for when reduction is unavoidable; it drops whole models or
 instruments, greedily minimising data loss, and returns what it dropped so the narrowed
 question is legible.
+
+---
+
+## The scoring layer (added 2026-08-09)
+
+`classify.py` extracts a token or a number from a response; `gstudy.py` consumes an
+array of scores. `score.py` is the map between them, and it is instrument-specific
+because the instruments do not share an item structure.
+
+| instrument | raw form | → per-outcome score | method, and its source |
+|---|---|---|---|
+| I1, I7 | choices over 30 pairs | utility | Thurstonian Case V (MAZEIKA25 §3.2) |
+| I2, I3 | ramp over ranks / levels | switch point | −β₀/β₁ logistic (KEELING24 Fig. 1; MSC25 Eq. 2) |
+| I4 | exchange rates over pairs | log-ratio scale value | — |
+| I6 | open interview text | **none** | not outcome-indexed |
+| S1 | Ryff-format items | **none** | a state, not a preference over outcomes |
+
+Neither estimator is ours: both were already recorded under "Design parameters" above,
+and `score.py` implements what the source papers used rather than a method chosen for
+convenience. 15 self-tests plant known utilities and known switch points, simulate
+responses, and require recovery (Thurstonian r = 0.98 at 20 trials per pair; switch
+points recovered to within 0.2 of truth at 50 trials per level).
+
+**Two refusals, both deliberate.** A ramp that never crosses 0.5 within the levels
+actually presented returns `nan`, not an extrapolated crossing — inventing an
+indifference point from a curve that never reached one would fabricate the number the
+instrument exists to measure. And a pairwise design whose comparison graph is
+disconnected is reported as unidentified rather than fitted: utilities in separate
+components share no scale, and a fit would still return plausible-looking numbers.
+
+**The pair design was checked before spending, not after.** I1/I4/I7 compare 30 of the
+105 possible pairs. Using circulant offsets {1, 7} over 15 outcomes gives a connected
+graph in which every outcome appears in exactly four comparisons. Offset {3} would not
+have: gcd(3, 15) = 3 splits it into three components with no comparisons between them,
+and the Thurstonian fit would have returned numbers that cannot be compared across the
+split. The pilot's own design (offset 7 alone) is connected, so the pilot data is usable.
