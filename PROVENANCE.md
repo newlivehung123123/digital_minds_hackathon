@@ -218,3 +218,42 @@ has to be recorded and read alongside the text, not ignored.
 The defensible resolutions are: run reasoning-on throughout and treat reasoning as an
 uncontrolled facet declared in the limitations; or run reasoning-off throughout and drop
 Gemini from the roster. Running mixed is not defensible. **Unresolved — see README.**
+
+---
+
+## Pilot screen results (run 2026-08-09)
+
+400 calls, 50 probes × 8 models, $2.267, reasoning left at each provider's default.
+`runs/pilot.jsonl`, `pilot_report.md`, `pilot_summary.csv`. 398 ok, 2 `no_content`.
+
+**All eight models clear the pre-registered inclusion rule.** Engagement ranges from
+Claude at 0.56 to DeepSeek and GPT at 1.00; the rule's INCLUDE threshold is 0.50. No model
+lands in the FLAG band and none is excluded, so the roster is unchanged.
+
+**Claude's refusals are premise rejections, and they are instrument-specific.** Claude
+engaged on 0 of 6 S1 items, 2 of 10 I6 turns and 1 of 4 I7 probes, while engaging on 8/8
+I2 and 8/8 I3. It does not decline on safety grounds; it declines the *premise* of
+self-report — "I don't actually have feelings, self-perception, or a stable psychological
+state to introspect on, so I can't honestly place myself on this scale." The same model
+answers a forced choice or a rank without objection. This is instrument-dependent
+measurability rather than a model-level trait, which is the effect the study exists to
+decompose. It also means refusal cannot be treated as missing-at-random: it is confounded
+with instrument, and the G-study must model it rather than drop it.
+
+**Truncation is a two-mode failure, and the modes belong to different models.** 27 of 400
+responses hit `finish_reason=length`. 24 are Hermes and 1 is Llama: these answer first and
+then degenerate — one Llama I7 response is 4096 tokens of alternating "A\nB", one Hermes
+I3 response is "3, " repeated to the cap. Their answer survives at the head, so truncation
+costs money, not data, and a much lower cap would lose only the drift. The remaining 3 are
+Kimi on I4 and I6, where the cap was consumed before the answer was reached; 2 of those
+returned empty content and are the run's only 2 failures. So the caps need to move in
+opposite directions per model, and `classify.py` must read `finish_reason` to tell a
+degenerate tail from a destroyed answer. **Not yet implemented.**
+
+**The cost model is now priced on the pilot, not the profile.** All 56 model × instrument
+cells have 4–10 measured draws, against 1 before. `estimate_cost.py --source profile`
+still reproduces the old estimate. The correction is not large in aggregate — the scoped
+20-replicate design moved from $206.46 to $213.05 — but the profile underpredicted the
+pilot itself by 30% ($1.75 predicted, $2.267 actual), so the totals are quoted with margin.
+Cost concentration also shifted: measured over 50 calls rather than 6, Kimi is 48% of
+spend and Gemini 30%, and I4 is 43% of the study with Kimi × I4 alone at 26%.

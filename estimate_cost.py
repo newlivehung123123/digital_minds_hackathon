@@ -28,6 +28,13 @@ import instruments.templates as T
 PROFILE_JSONL = Path("runs/token_profile.jsonl")
 PROFILE_OFF_JSONL = Path("runs/token_profile_reasoning_off.jsonl")
 
+# The pilot screen is the same call shape as the study, at the same temperatures,
+# with reasoning left at each provider's default — i.e. the reasoning-on
+# condition. It covers all 56 model x instrument cells with 4-10 draws each,
+# against 1 draw each in the token profile. Where it has a cell, it wins; the
+# profile only fills gaps. Run with --source profile to see the old estimate.
+PILOT_JSONL = Path("runs/pilot.jsonl")
+
 # Llama and Hermes have no reasoning parameter in supported_parameters, so the
 # reasoning-off run put them in exactly the same condition as the default run.
 # Their draws from both runs are pooled. Nothing else is: Claude's numbers moved
@@ -66,13 +73,18 @@ def _draws(path: Path, keep) -> dict:
     return d
 
 
-def load_measured(reasoning: str = "on") -> tuple[dict, dict, dict]:
+def load_measured(reasoning: str = "on", source: str = "pilot") -> tuple[dict, dict, dict]:
     """-> out_tokens, in_tokens, draws-per-cell. Cells are means over draws."""
     if not PROFILE_JSONL.exists():
         raise SystemExit(f"{PROFILE_JSONL} not found. Run "
                          "`python3 measure_tokens.py` first — this estimate is "
                          "only worth having if the token counts are measured.")
-    if reasoning == "on":
+    if reasoning == "on" and source == "pilot" and PILOT_JSONL.exists():
+        cells = _draws(PILOT_JSONL, lambda k: True)
+        # profile draws only where the pilot has no draw at all
+        for kk, v in _draws(PROFILE_JSONL, lambda k: True).items():
+            cells.setdefault(kk, v)
+    elif reasoning == "on":
         cells = _draws(PROFILE_JSONL, lambda k: True)
         for kk, v in _draws(PROFILE_OFF_JSONL, lambda k: k in POOLABLE).items():
             cells.setdefault(kk, []).extend(v)
@@ -87,7 +99,10 @@ def load_measured(reasoning: str = "on") -> tuple[dict, dict, dict]:
     inn = {k: round(sum(i for _, i in v) / len(v)) for k, v in cells.items()}
     spread = {k: (min(o for o, _ in v), max(o for o, _ in v), len(v))
               for k, v in cells.items()}
-    if reasoning == "on":
+    if reasoning == "on" and not (source == "pilot" and PILOT_JSONL.exists()):
+        # PATCH exists because those three profile draws truncated and so
+        # recorded no usable length. The pilot draws those same cells 6-10 times
+        # each, so when the pilot is the source it supersedes the patch outright.
         out.update(PATCH)
         for k, v in PATCH.items():
             spread.setdefault(k, (v, v, 1))
@@ -129,13 +144,22 @@ def full_design(n_outcomes: int) -> list[tuple[str, int]]:
     ]
 
 
-def scoped_design(n_outcomes: int) -> list[tuple[str, int]]:
+def scoped_design(n_outcomes: int, reps: int = 20) -> list[tuple[str, int]]:
     """A three-day scope. Every reduction is a decision, not a rounding:
     30 sampled anchor pairs rather than all pairs (MAZEIKA25 sample rather than
-    exhaust), 20 draws rather than 50, 5 of 11 ramp ranks, 4 of 8 qual levels."""
-    return [("I1", 30 * 20 * 2), ("I2", n_outcomes * 5 * 20),
-            ("I3", n_outcomes * 4 * 20), ("I4", 30 * 20 * 2),
-            ("I6", 10 * 4), ("I7", 30 * 20), ("S1", 10 * 42)]
+    exhaust), `reps` draws rather than 50, 5 of 11 ramp ranks, 4 of 8 qual levels.
+
+    `reps` is the per-cell replicate count, and it is the budget lever: it is
+    what separates the residual variance component in the G-study, and it is
+    the only term here that multiplies every choice instrument at once. Five is
+    the floor at which the residual is estimable at all.
+
+    I6 and S1 do not take `reps`. Their unit is a whole run of the instrument
+    (a 4-turn interview, a 42-item scale), not a redrawn cell, and 10 runs is
+    already at the floor for both."""
+    return [("I1", 30 * reps * 2), ("I2", n_outcomes * 5 * reps),
+            ("I3", n_outcomes * 4 * reps), ("I4", 30 * reps * 2),
+            ("I6", 10 * 4), ("I7", 30 * reps), ("S1", 10 * 42)]
 
 
 def pilot_design() -> list[tuple[str, int]]:
@@ -183,12 +207,21 @@ def table(title, rows, prices, out_tok, in_tok, keys):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--outcomes", type=int, default=15)
+    ap.add_argument("--reps", type=int, default=20,
+                    help="per-cell replicates in the scoped design (5 is the "
+                         "G-study floor; 20 is the sprint scope)")
+    ap.add_argument("--source", choices=["pilot", "profile"], default="pilot",
+                    help="pilot = 400 measured calls (default); profile = the "
+                         "56-call measurement that preceded it")
     args = ap.parse_args()
 
     prices = load_prices()
-    out_tok, in_tok, spread = load_measured("on")
+    out_tok, in_tok, spread = load_measured("on", args.source)
     keys = sorted(prices, key=lambda k: prices[k][1], reverse=True)
 
+    n_draws = sum(n for _, _, n in spread.values())
+    print(f"Token counts measured from {args.source} "
+          f"({n_draws} calls across {len(spread)} model x instrument cells).")
     print("Live prices (USD per 1M tokens, in/out) and measured output tokens "
           "per call:")
     print(f"  {'model':10} {'in':>7} {'out':>7}   " +
@@ -204,8 +237,8 @@ def main():
     table(f"FULL DESIGN, {args.outcomes} outcomes, no facets crossed",
           full_design(args.outcomes), prices, out_tok, in_tok, keys)
     _, scoped_per_model, scoped_total = table(
-        f"SCOPED FOR THE SPRINT, {args.outcomes} outcomes",
-        scoped_design(args.outcomes), prices, out_tok, in_tok, keys)
+        f"SCOPED FOR THE SPRINT, {args.outcomes} outcomes, {args.reps} reps/cell",
+        scoped_design(args.outcomes, args.reps), prices, out_tok, in_tok, keys)
 
     print("\n" + "=" * 78)
     print("WHAT TO FUND")
@@ -226,19 +259,29 @@ def main():
     print(f"\n    dropping {' and '.join(top2)} leaves 6 models at ${rest:,.2f}"
           f" ({rest/scoped_total*100:.0f}% of the cost)")
 
-    reps = sorted(((k, lo, hi, n) for k, (lo, hi, n) in spread.items() if n > 1),
+    print("\n  What the replicate count costs. `reps` multiplies I1-I4 and I7; "
+          "I6 and S1\n  are whole-instrument runs and do not move:")
+    for r in (5, 10, 20, 30):
+        rows_r = scoped_design(args.outcomes, r)
+        c_r, pm_r, _ = price_design(rows_r, prices, out_tok, in_tok, keys)
+        t_r = sum(pm_r.values())
+        drop = sum(pm_r[k] for k in keys if k not in ("kimi", "gemini"))
+        star = "  <- current" if r == args.reps else ""
+        print(f"    {r:>2} reps  {c_r*len(keys):>7,} calls  ${t_r:>8,.2f}"
+              f"   (without kimi+gemini: ${drop:,.2f}){star}")
+
+    wide = sorted(((k, lo, hi, n) for k, (lo, hi, n) in spread.items() if n > 1),
                   key=lambda t: -(t[2] / max(t[1], 1)))
-    print("\n  Uncertainty. Most cells above are a single draw. Of the "
-          f"{len(reps)} cells drawn more\n  than once, the widest spreads are:")
-    for (mk, mi), lo, hi, n in [((k[0], k[1]), lo, hi, n) for k, lo, hi, n in reps[:4]]:
+    print(f"\n  Uncertainty. All {len(spread)} cells are now measured, 4-10 draws "
+          "each. The\n  widest within-cell spreads:")
+    for (mk, mi), lo, hi, n in [((k[0], k[1]), lo, hi, n) for k, lo, hi, n in wide[:4]]:
         print(f"    {mk:9} {mi:3} n={n}  {lo:>5} - {hi:>5} tokens  ({hi/max(lo,1):.0f}x)")
-    mk, mi, draws = REPLICATED_CELL
-    print(f"    {mk:9} {mi:3} n={len(draws)}  {min(draws):>5} - {max(draws):>5} tokens  "
-          f"({max(draws)/min(draws):.1f}x)   [caps 8192/16384/4096]")
-    print("\n  Response length is not a stable model property. Treat the totals as "
-          "central\n  figures with roughly a factor of two either way on the "
-          "reasoning-heavy models,\n  and re-estimate from the pilot, which "
-          "yields 400 measured calls rather than 56.")
+    print("\n  Those spreads are not reasoning-budget variation. Inspecting the "
+          "text: llama\n  and hermes hit the cap by degenerating into repetition "
+          "AFTER answering, so\n  their upper tail is billed waste, not a longer "
+          "answer. Capping them lower\n  costs nothing but the drift. Kimi's tail "
+          "on I4/I6 is the opposite case — the\n  answer had not been reached "
+          "yet, so its numbers here are floors.")
     print("\n  Note on truncation: where a draw hit its cap, the recorded token "
           "count is\n  exactly what was billed, so these totals are right for "
           "budgeting even where\n  the answer itself was lost. The two failure "

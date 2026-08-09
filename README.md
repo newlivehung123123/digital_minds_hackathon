@@ -145,6 +145,9 @@ Decisions only you can make:
       count, not intensity, so I3 × outcome is not fully crossed. Restrict I3 to the
       11 intensity ramps, rewrite the four, or run both.
 - [ ] Confirm with organisers that pre-built scaffolding is permitted
+- [ ] **Decide the reasoning condition**: on (8 models) or off (7, Gemini cannot comply)
+- [ ] **Fund the run.** 5 replicates/cell is the G-study floor and costs $63.03 across all
+      eight models; $33.52 of credit remains. See `estimate_cost.py --reps 5`.
 
 Sourcing:
 
@@ -156,5 +159,8 @@ Sourcing:
 Ready to run as soon as a key is in `.env`:
 
 - [x] Runner, classifier and 50-probe pilot screen built and self-tested
+- [x] Pilot screen run, 400 calls, $2.267 — all 8 models INCLUDE (`pilot_report.md`)
+- [ ] Make `classify.py` read `finish_reason`: 27/400 responses truncated, and truncation
+      destroys the answer on Kimi while costing only drift on Hermes
 - [ ] `python3 resolve_models.py --probe` — 8 candidate slugs are still guesses
 - [ ] `python3 pilot_screen.py` — select models on measured refusal, not assumption
