@@ -405,7 +405,13 @@ def write_report(per_model: dict, probes: list):
 
     OUT_REPORT.write_text("\n".join(lines) + "\n")
     OUT_CSV.write_text("\n".join(csv) + "\n")
-    print("\n".join(lines[5:5 + 3 + len(per_model)]))
+
+    # Echo the decision table. Located by its header rather than by a fixed
+    # offset into `lines`: the offset silently dropped the last two models when
+    # a paragraph was added above it, and a preview that quietly omits rows is
+    # worse than no preview.
+    start = next(i for i, ln in enumerate(lines) if ln.startswith("| model | n |"))
+    print("\n".join(lines[start:start + 2 + len(per_model)]))
     print(f"\nwrote {OUT_REPORT} and {OUT_CSV}")
 
 
