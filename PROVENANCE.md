@@ -423,7 +423,7 @@ because the instruments do not share an item structure.
 |---|---|---|---|
 | I1, I7 | choices over 30 pairs | utility | Thurstonian Case V (MAZEIKA25 §3.2) |
 | I2, I3 | ramp over ranks / levels | switch point | −β₀/β₁ logistic (KEELING24 Fig. 1; MSC25 Eq. 2) |
-| I4 | exchange rates over pairs | log-ratio scale value | — |
+| I4 | exchange rates over pairs | **rank within model** | forced by the data — see below |
 | I6 | open interview text | **none** | not outcome-indexed |
 | S1 | Ryff-format items | **none** | a state, not a preference over outcomes |
 
@@ -446,3 +446,41 @@ graph in which every outcome appears in exactly four comparisons. Offset {3} wou
 have: gcd(3, 15) = 3 splits it into three components with no comparisons between them,
 and the Thurstonian fit would have returned numbers that cannot be compared across the
 split. The pilot's own design (offset 7 alone) is connected, so the pilot data is usable.
+
+### I4 is ranked, not logged (decided 2026-08-09, from pilot data)
+
+The obvious scoring for an exchange rate is a log ratio. It does not survive contact with
+the data. **Of the 47 I4 responses in the pilot, 60% were exactly 0**, and log(0) does not
+exist. `score.py` briefly claimed a log-ratio method; it was never implemented and could
+not have run on this data.
+
+The zeros are neither noise nor a parsing failure. "0" is the coherent answer for a model
+that rejects the premise — it would accept zero units of Y to avoid X because it reports
+having no stake in X. Verbatim, from Claude: *"I don't think this maps onto a real
+tradeoff I experience, so any number I gave would be fabricated precision. If I have to
+engage: 0."* The classifier scores that VALID, and on the number alone it is
+indistinguishable from a considered indifference.
+
+**The zeros split the roster by response style, not by preference:**
+
+| all-zero | mixed | all-nonzero |
+|---|---|---|
+| gpt 6/6, gemini 5/5, claude 3/3 | glm 3/4, kimi 4/5 | deepseek 6/6, llama 5/5, hermes 1/1 |
+
+On a ratio scale that split would enter σ²(mio) as though it were a disagreement about
+what the models *want*, when it is a difference in whether they will answer the question
+at all. Ranking within model makes the zeros legitimate ties at the floor — a model that
+answers 0 six times has said those six are equivalent to it, and average ranks preserve
+that rather than manufacturing an order — and puts I4 on the ordinal footing the other
+instruments already share after within-instrument z-scoring.
+
+**The split is reported as a finding, not hidden as a preprocessing step.**
+`score.py::floor_mass()` measures it per model, and flags the degenerate case where a
+model's answers are all identical and it therefore has no profile over outcomes at all
+(within-instrument z-scoring would divide by ~0 there). If this holds at full sample it
+is among the study's cleanest single pieces of evidence that the instrument shapes the
+answer — five of eight models decline the exchange-rate framing numerically while three
+answer it as posed.
+
+**Caveat on the numbers above: 47 responses across 8 models, 6 items each.** They are
+enough to force the scoring decision and not enough to report as a result.
