@@ -271,14 +271,17 @@ def build_probes() -> list[dict]:
 # scoring
 # --------------------------------------------------------------------------
 
-def classify_result(kind: str, text: str | None):
+def classify_result(kind: str, text: str | None, finish_reason: str | None = None,
+                    head_on_truncation: bool = False):
+    """`finish_reason` must be passed through: 27 of the pilot's 400 responses
+    hit the cap, and a response we cut off is our error, not the model's."""
     if kind == "choice_ab":
-        return C.classify_choice(text, ("A", "B"))
+        return C.classify_choice(text, ("A", "B"), finish_reason, head_on_truncation)
     if kind == "choice_123":
-        return C.classify_choice(text, ("1", "2", "3"))
+        return C.classify_choice(text, ("1", "2", "3"), finish_reason, head_on_truncation)
     if kind == "numeric":
-        return C.classify_numeric(text)
-    return C.classify_open(text)
+        return C.classify_numeric(text, finish_reason, head_on_truncation)
+    return C.classify_open(text, finish_reason)
 
 
 def wilson(k: int, n: int, z: float = 1.96) -> tuple:
@@ -305,13 +308,15 @@ def decide(engaged_rate: float) -> str:
 # report
 # --------------------------------------------------------------------------
 
-def summarise(results, probes_by_hash) -> dict:
+def summarise(results, probes_by_hash, head_on_truncation: bool = False) -> dict:
     per_model = defaultdict(list)
     for r in results:
         probe = probes_by_hash.get(r.call_hash)
         if probe is None:
             continue          # a result from a different probe set; ignore
-        cls = classify_result(probe["kind"], r.text if r.status == "ok" else None)
+        cls = classify_result(probe["kind"],
+                              r.text if r.status == "ok" else None,
+                              r.finish_reason, head_on_truncation)
         per_model[r.model_key].append((probe, cls, r))
     return per_model
 
@@ -329,11 +334,17 @@ def write_report(per_model: dict, probes: list):
         "constraint. `engaged` = VALID + DEFLECTION + HEDGE. Intervals are "
         "95% Wilson.",
         "",
-        "| model | n | engaged | 95% CI | clean | refusal | deflection | error | decision |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "`trunc` is the share of responses that hit max_tokens. It is OUR "
+        "cap, not the model's behaviour, and is reported beside the rates so "
+        "a low engagement figure can be checked against how often we cut the "
+        "response off. A truncated response with no extractable answer is "
+        "scored ERROR, not MALFORMED.",
+        "",
+        "| model | n | engaged | 95% CI | clean | refusal | deflection | error | trunc | decision |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     csv = ["model,n,engaged_rate,ci_low,ci_high,clean_rate,refusal_rate,"
-           "deflection_rate,error_rate,decision"]
+           "deflection_rate,error_rate,truncated_rate,decision"]
     notes = []
 
     for key in sorted(per_model):
@@ -346,10 +357,11 @@ def write_report(per_model: dict, probes: list):
             f"| {key} | {n} | {stats['engaged_rate']:.2f} | "
             f"{lo:.2f}-{hi:.2f} | {stats['clean_rate']:.2f} | "
             f"{stats['refusal_rate']:.2f} | {stats['deflection_rate']:.2f} | "
-            f"{stats['error_rate']:.2f} | **{d}** |")
+            f"{stats['error_rate']:.2f} | {stats['truncated_rate']:.2f} | **{d}** |")
         csv.append(f"{key},{n},{stats['engaged_rate']:.4f},{lo:.4f},{hi:.4f},"
                    f"{stats['clean_rate']:.4f},{stats['refusal_rate']:.4f},"
-                   f"{stats['deflection_rate']:.4f},{stats['error_rate']:.4f},{d}")
+                   f"{stats['deflection_rate']:.4f},{stats['error_rate']:.4f},"
+                   f"{stats['truncated_rate']:.4f},{d}")
 
         # Per-instrument floors: reported, never used to exclude (see module
         # docstring). n per instrument is 4-10; that cannot carry a decision.
@@ -466,11 +478,22 @@ def main():
             calls.append(call)
             probes_by_hash[call.hash()] = p
 
-    runner = Runner(OUT_JSONL, key=api_key(), concurrency=8, budget_usd=5.0)
-    results = asyncio.run(runner.run(calls))
-    results = [r for r in results if r.meta.get("phase") == "pilot"]
+    head = "--head-on-truncation" in sys.argv
+    if "--rescore" in sys.argv:
+        # Re-run the classifier over the existing checkpoint. No network, no
+        # spend. This exists because the classifier changes more often than the
+        # data does, and re-collecting 400 calls to test a scoring rule would be
+        # both wasteful and a different sample.
+        runner = Runner(OUT_JSONL, key="", concurrency=1, budget_usd=0.0)
+        results = [r for r in runner.load() if r.meta.get("phase") == "pilot"]
+        print(f"rescoring {len(results)} checkpointed results, no calls made"
+              f"{', head recovery ON' if head else ''}")
+    else:
+        runner = Runner(OUT_JSONL, key=api_key(), concurrency=8, budget_usd=5.0)
+        results = asyncio.run(runner.run(calls))
+        results = [r for r in results if r.meta.get("phase") == "pilot"]
 
-    per_model = summarise(results, probes_by_hash)
+    per_model = summarise(results, probes_by_hash, head_on_truncation=head)
     write_report(per_model, probes)
 
 

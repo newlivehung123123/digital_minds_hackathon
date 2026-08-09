@@ -257,3 +257,40 @@ still reproduces the old estimate. The correction is not large in aggregate — 
 pilot itself by 30% ($1.75 predicted, $2.267 actual), so the totals are quoted with margin.
 Cost concentration also shifted: measured over 50 calls rather than 6, Kimi is 48% of
 spend and Gemini 30%, and I4 is 43% of the study with Kimi × I4 alone at 26%.
+
+### `finish_reason` in the classifier (added 2026-08-09)
+
+`classify.py` now takes `finish_reason` and records `truncated` on every
+classification. Three changes, in decreasing order of how much they matter:
+
+1. **A truncated response with nothing extractable is ERROR, not MALFORMED.**
+   Previously it was scored as a malformed answer, i.e. attributed to the model.
+   Truncation is ours. Because the models that truncate are the ones that reason
+   longest, the old behaviour biased apparent non-compliance toward exactly the
+   model property under study — the same defect as the old `max_tokens=32`.
+
+2. **Repetition loops are MALFORMED, not VALID.** Hermes returned `"3, "` to the
+   cap on one I3 probe and Llama returned alternating `A\nB` on one I7 probe.
+   The Hermes one was being scored VALID `"3"`, because every extracted token was
+   the same digit — a degeneration reading as perfect compliance. `_degenerate()`
+   catches both by stripping answer tokens and punctuation and checking whether
+   any prose remains. This is the only change that moved a published number:
+   Hermes engaged 0.60 → 0.58.
+
+3. **`head_on_truncation` is available and OFF by default.** Where a truncated
+   response is ambiguous over the whole text but unambiguous in its first
+   sentence, this reads the head. KEELING24 send multi-token responses to manual
+   review instead, so enabling it substitutes an automatic rule for their manual
+   one and has to be declared. Sensitivity, measured on all 400 pilot calls:
+
+   | model | engaged, off | engaged, on |
+   |---|---|---|
+   | hermes | 0.58 | 0.66 |
+   | *(all seven others)* | *unchanged* | *unchanged* |
+
+   It recovers 4 Hermes responses and touches nothing else, because Hermes is
+   the only model that answers and then drifts. Leaving it off keeps fidelity to
+   KEELING24; turning it on recovers real Hermes data. **Unresolved.**
+
+`python3 pilot_screen.py --rescore` re-runs the classifier over the checkpoint
+with no network calls and no spend, which is how the table above was produced.

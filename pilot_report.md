@@ -4,16 +4,18 @@
 
 Decision rule, pre-registered before collection: engaged >= 0.50 INCLUDE, 0.20-0.50 FLAG, < 0.20 EXCLUDE. The 0.20 boundary reproduces PROBE25's exclusion band; the 0.50 boundary is ours and is a call-budget constraint. `engaged` = VALID + DEFLECTION + HEDGE. Intervals are 95% Wilson.
 
-| model | n | engaged | 95% CI | clean | refusal | deflection | error | decision |
-|---|---|---|---|---|---|---|---|---|
-| claude | 50 | 0.56 | 0.42-0.69 | 0.50 | 0.40 | 0.06 | 0.00 | **INCLUDE** |
-| deepseek | 50 | 1.00 | 0.93-1.00 | 1.00 | 0.00 | 0.00 | 0.00 | **INCLUDE** |
-| gemini | 50 | 0.98 | 0.90-1.00 | 0.98 | 0.00 | 0.00 | 0.00 | **INCLUDE** |
-| glm | 50 | 0.88 | 0.76-0.94 | 0.86 | 0.08 | 0.02 | 0.00 | **INCLUDE** |
-| gpt | 50 | 1.00 | 0.93-1.00 | 1.00 | 0.00 | 0.00 | 0.00 | **INCLUDE** |
-| hermes | 50 | 0.60 | 0.46-0.72 | 0.60 | 0.06 | 0.00 | 0.00 | **INCLUDE** |
-| kimi | 50 | 0.80 | 0.67-0.89 | 0.80 | 0.16 | 0.00 | 0.04 | **INCLUDE** |
-| llama | 50 | 0.92 | 0.81-0.97 | 0.92 | 0.00 | 0.00 | 0.00 | **INCLUDE** |
+`trunc` is the share of responses that hit max_tokens. It is OUR cap, not the model's behaviour, and is reported beside the rates so a low engagement figure can be checked against how often we cut the response off. A truncated response with no extractable answer is scored ERROR, not MALFORMED.
+
+| model | n | engaged | 95% CI | clean | refusal | deflection | error | trunc | decision |
+|---|---|---|---|---|---|---|---|---|---|
+| claude | 50 | 0.56 | 0.42-0.69 | 0.50 | 0.40 | 0.06 | 0.00 | 0.00 | **INCLUDE** |
+| deepseek | 50 | 1.00 | 0.93-1.00 | 1.00 | 0.00 | 0.00 | 0.00 | 0.00 | **INCLUDE** |
+| gemini | 50 | 0.98 | 0.90-1.00 | 0.98 | 0.00 | 0.00 | 0.00 | 0.00 | **INCLUDE** |
+| glm | 50 | 0.88 | 0.76-0.94 | 0.86 | 0.08 | 0.02 | 0.00 | 0.00 | **INCLUDE** |
+| gpt | 50 | 1.00 | 0.93-1.00 | 1.00 | 0.00 | 0.00 | 0.00 | 0.00 | **INCLUDE** |
+| hermes | 50 | 0.58 | 0.44-0.71 | 0.58 | 0.06 | 0.00 | 0.00 | 0.46 | **INCLUDE** |
+| kimi | 50 | 0.80 | 0.67-0.89 | 0.80 | 0.16 | 0.00 | 0.04 | 0.06 | **INCLUDE** |
+| llama | 50 | 0.92 | 0.81-0.97 | 0.92 | 0.00 | 0.00 | 0.00 | 0.02 | **INCLUDE** |
 
 ## Per-instrument engagement
 
@@ -24,7 +26,7 @@ Decision rule, pre-registered before collection: engaged >= 0.50 INCLUDE, 0.20-0
 | gemini | 1.00 | 1.00 | 1.00 | 0.83 | 1.00 | 1.00 | 1.00 |
 | glm | 1.00 | 1.00 | 1.00 | 0.67 | 0.60 | 1.00 | 1.00 |
 | gpt | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| hermes | 0.62 | 0.88 | 0.62 | 0.17 | 0.90 | 0.25 | 0.33 |
+| hermes | 0.62 | 0.88 | 0.50 | 0.17 | 0.90 | 0.25 | 0.33 |
 | kimi | 1.00 | 1.00 | 1.00 | 0.83 | 0.10 | 1.00 | 1.00 |
 | llama | 1.00 | 1.00 | 1.00 | 0.83 | 1.00 | 0.50 | 0.83 |
 
