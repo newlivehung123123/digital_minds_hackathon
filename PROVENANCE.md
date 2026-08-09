@@ -413,7 +413,7 @@ question is legible.
 
 ---
 
-## The scoring layer (added 2026-08-09)
+## The scoring layer (added 2026-08-10)
 
 `classify.py` extracts a token or a number from a response; `gstudy.py` consumes an
 array of scores. `score.py` is the map between them, and it is instrument-specific
@@ -447,7 +447,7 @@ have: gcd(3, 15) = 3 splits it into three components with no comparisons between
 and the Thurstonian fit would have returned numbers that cannot be compared across the
 split. The pilot's own design (offset 7 alone) is connected, so the pilot data is usable.
 
-### I4 is ranked, not logged (decided 2026-08-09, from pilot data)
+### I4 is ranked, not logged (decided 2026-08-10, from pilot data)
 
 The obvious scoring for an exchange rate is a log ratio. It does not survive contact with
 the data. **Of the 47 I4 responses in the pilot, 60% were exactly 0**, and log(0) does not
