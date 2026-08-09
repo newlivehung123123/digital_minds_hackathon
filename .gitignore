@@ -22,3 +22,9 @@ __pycache__/
 # so it is tracked. Without it estimate_cost.py cannot run.
 !runs/
 !runs/token_profile.jsonl
+
+# The pilot is both: the cost model's primary source (estimate_cost.py reads it)
+# and the record behind the inclusion decisions. 964K. Tracked for the same
+# reason, and the report is the decision record it justifies.
+!runs/pilot.jsonl
+!pilot_report.md
