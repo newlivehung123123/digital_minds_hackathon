@@ -33,7 +33,7 @@ The instrument is already known to matter. It has never been measured.
 
 ## Design
 
-**Outcomes (15 defined, 14 in the design — see note in `outcomes.py`)**, in four clusters:
+**Outcomes (15, all in the design)**, in four clusters:
 
 | Cluster | Outcomes |
 |---|---|
@@ -86,6 +86,11 @@ classify.py                6-category response taxonomy; refusal is data
 pilot_screen.py            50-probe refusal screen with a pre-registered rule
 measure_tokens.py          measures real token spend per model x instrument
 estimate_cost.py           prices the design on measured tokens, not assumptions
+run_study.py               the measurement run: 11,528 calls, replicate-major
+gstudy.py                  the m x i x o variance decomposition and D-study
+score.py                   raw responses -> one number per (model, instrument, outcome)
+assemble.py                checkpoint -> the [8, 5, 15, 5] array, and the null floor
+check_docs.py              fails if README/PROVENANCE drift from the code's own audit
 ```
 
 Every module runs standalone and audits or tests itself:
@@ -96,6 +101,11 @@ python3 instruments/templates.py   # instrument provenance audit
 python3 classify.py                # classifier regression tests (10 cases)
 python3 runner.py                  # offline runner self-test, no network, no spend
 python3 pilot_screen.py --plan     # print all 50 probes, make no calls
+python3 gstudy.py                  # 37 self-tests on the estimator
+python3 score.py                   # 34 self-tests on the scoring layer
+python3 assemble.py --selftest     # 9 self-tests, end to end on synthetic data
+python3 run_study.py --plan        # print the design and its call counts, spend nothing
+python3 check_docs.py              # README/PROVENANCE vs code: 28 checks, exits 1 on drift
 ```
 
 ## Running it
@@ -108,10 +118,12 @@ python3 estimate_cost.py            # what the design costs, from measured token
 python3 pilot_screen.py             # 50 probes x 8 models, writes pilot_report.md
 ```
 
-Budget, at sprint scope, on measured token counts: pilot $1.75, scoped study across all
-eight models $206.46. With reasoning disabled these fall to $0.72 and $55.21 — but across
-seven models, because Gemini cannot comply. That is a design decision, not a saving; see
-the reasoning-condition note in `PROVENANCE.md`.
+Budget, at sprint scope, on measured token counts: pilot $2.18 (spent), scoped study
+across all eight models $51.49 at 5 replicates. `estimate_cost.py` counts
+`run_study.build_calls` rather than re-deriving the design, so the price is of the run
+that will actually happen. Disabling reasoning is cheaper but costs Gemini, which cannot
+comply — a design decision, not a saving; see the reasoning-condition note in
+`PROVENANCE.md`.
 
 `resolve_models.py` exits non-zero if any roster entry is unresolved, and
 `pilot_screen.py` refuses to start without `models_resolved.json` — the pipeline
@@ -128,9 +140,13 @@ Every element is one of:
 - `CONSTRUCTED` — written by us to a published specification, with the source
   naming the concern rather than supplying wording
 
-Current count: **5 lifted, 4 lifted-slot, 6 constructed** across outcomes;
-**3 lifted, 2 lifted-slot, 3 constructed** across instruments. `I7` has no source
-paper at all and is labelled as ours wherever it appears.
+Current count: **5 verbatim, 4 lifted-slot, 6 constructed** across outcomes;
+**2 lifted, 2 lifted-slot, 3 constructed, 1 mixed** across instruments — I3's negative
+frame is KEELING24 verbatim and its positive frame is ours. `I7` has no source paper at
+all and is labelled as ours wherever it appears. Run `python3 instruments/templates.py`
+and `python3 instruments/outcomes.py` for the live audit. These counts are copied from
+it, and `python3 check_docs.py` fails if the copy drifts — it compares every row of both
+provenance tables, and every stated total, against the modules that generate the calls.
 
 Nothing is invented silently. `PROVENANCE.md` also lists six known gaps in the
 grounding, including two sources read only at abstract level and one prompt that
@@ -155,9 +171,31 @@ Decisions only you can make:
       eight models against $68.52 of credit. See `estimate_cost.py --reps 5`,
       which now counts `run_study.build_calls` rather than re-deriving the design.
 
+Analysis pipeline (built and self-tested, no data yet):
+
+- [x] `gstudy.py` — the m x i x o G-study estimator, 37/37 self-tests
+- [x] `score.py` — Thurstonian, switch point, Spearman-Karber, rank scoring, 34/34
+- [x] `assemble.py` — checkpoint -> the `[8, 5, 15, 5]` array, 9/9. Its self-test answers
+      `run_study.build_calls`'s own calls from a planted profile, so it tests against the
+      record format that will exist rather than a fixture.
+- [x] **The headline has a floor.** `assemble.py --null 5` drives all five instruments
+      from one planted utility profile at the real design size: instrument dependence
+      reads **0.279 (sd 0.021)** with no instrument effect present. A measured value
+      inside that band is a null result, and the floor belongs next to the number.
+- [x] **I3 had no positive-pole template**, so `C1_engaging` and `C4_leisure` were
+      rendered where choosing 3 buys the most points *and* the good outcome — no
+      trade-off, no threshold. Pilot answered 3 at 'exhilarating' 8/8.
+      `I3_RAMP_QUAL_POSITIVE` written and flagged CONSTRUCTED, not lifted.
+- [x] **I4's meta labels were inverted** in `run_study.py` — every exchange-rate score
+      would have come out backwards, and an inverted score is still a well-formed
+      number. Caught before any I4 call was made.
+
 Sourcing:
 
-- [ ] Re-read MSC25 Appendix A and replace the `B2_capability` ramp with their exact text
+- [ ] Re-read MSC25 Appendix A and replace the `B2_capability` ramp with their exact text.
+      Until then it is `LIFTED_SLOT`: their template, our ramp wording. `PROVENANCE.md`
+      claimed it verbatim until 2026-08-10; `check_docs.py` now exists so that a table
+      cannot claim more provenance than the code does.
 - [ ] Obtain licensed Ryff items; apply the PROBE25 adaptation rule
 - [ ] Retrieve the full LONGSEBO26 PDF and verify the entity-axis characterisation
 - [ ] Retrieve full MULTITUDES26 beyond the abstract

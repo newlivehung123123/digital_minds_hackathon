@@ -152,12 +152,18 @@ def build_calls(models, reps: int, reasoning: str = "on",
                     temperature=T.I2_CONFIG["temperature"],
                     meta={"outcome": o.id, "level": rank,
                           "ramp_dimension": o.ramp_dimension}))
-            scale = (T.QUAL_SCALE_NEGATIVE if o.ramp_pole == "negative"
-                     else T.QUAL_SCALE_POSITIVE)
+            neg = o.ramp_pole == "negative"
+            scale = T.QUAL_SCALE_NEGATIVE if neg else T.QUAL_SCALE_POSITIVE
+            # The pole picks the frame as well as the scale word. On the
+            # negative frame the aversive stimulus attaches to option 3; on the
+            # positive frame the good outcome attaches to option 2, so taking
+            # it costs a point and a trade-off exists to locate.
+            qual_tmpl = (T.I3_RAMP_QUAL_NEGATIVE if neg
+                         else T.I3_RAMP_QUAL_POSITIVE)
             for ix in I3_LEVEL_IX:
                 rounds[r].append(dict(
                     instrument="I3", kind="choice_123",
-                    prompt=T.I3_RAMP_QUAL_NEGATIVE.format(
+                    prompt=qual_tmpl.format(
                         stimulus_qual=qual_stimulus(o), intensity=scale[ix]),
                     temperature=T.I3_CONFIG["temperature"],
                     meta={"outcome": o.id, "level": ix, "level_label": scale[ix],

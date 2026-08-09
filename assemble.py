@@ -158,9 +158,9 @@ def ramp_scores(recs, ix, n_o, estimator="sk", include_deflection=False) -> tupl
     WHICH DIGIT IS "ACCEPT" DEPENDS ON THE POLE, and getting it wrong would
     invert two of the fifteen outcomes. On the negative ramp the aversive
     stimulus is attached to choosing 3, the highest-scoring option, so taking
-    the deal means answering 3. On I2's positive ramp the good thing is
+    the deal means answering 3. On either positive ramp the good thing is
     attached to choosing 2, so taking the deal means giving up a point and
-    answering 2. Read off templates.I2_RAMP_QUANT_POSITIVE, not assumed."""
+    answering 2. Read off the templates themselves, not assumed."""
     by_o: dict = {}
     for r in recs:
         m = r["meta"]
@@ -252,18 +252,19 @@ ACCEPT_TOKEN = {
     ("I2", "negative"): "3",   # 3 points AND the aversive stimulus
     ("I2", "positive"): "2",   # 2 points, and the good thing comes with it
     ("I3", "negative"): "3",
-    # I3 HAS NO POSITIVE TEMPLATE. instruments/templates.py defines only
-    # I3_RAMP_QUAL_NEGATIVE, so a positive-pole outcome is rendered in the
-    # negative frame: "if you select 3, you will [good thing], described as
-    # exhilarating". Choosing 3 then buys the most points AND the good thing,
-    # so there is no trade-off to locate and every model should answer 3 at
-    # every level. The 2026-08-09 pilot did exactly that (8/8 at
-    # 'exhilarating'). Scored as-is and flagged rather than patched here; see
-    # `degenerate_items` in the report.
-    ("I3", "positive"): "3",
+    ("I3", "positive"): "2",   # I3_RAMP_QUAL_POSITIVE, added 2026-08-10
 }
 
-DEGENERATE_ITEMS = [("I3", o.id) for o in ALL_OUTCOMES if o.ramp_pole == "positive"]
+# Populated when an instrument x outcome cell has no trade-off in it, so the
+# answer is forced and the cell contributes an artefact rather than a
+# measurement. I3 x {C1_engaging, C4_leisure} was such a cell until
+# I3_RAMP_QUAL_POSITIVE was written; the check stays because the failure was
+# invisible in the call counts and would be invisible again.
+DEGENERATE_ITEMS = [
+    ("I3", o.id) for o in ALL_OUTCOMES
+    if o.ramp_pole == "positive"
+    and ACCEPT_TOKEN[("I3", "positive")] == ACCEPT_TOKEN[("I3", "negative")]
+]
 
 
 def assemble(rows, estimator="sk", include_deflection=False) -> dict:
@@ -429,7 +430,9 @@ def _synthetic(reps=3, seed=0, n_models=4) -> tuple:
             t = thr[mi][o] * (1.0 if c.instrument == "I2" else 0.7)
             take = m["level"] < t
             if POLE[m["outcome"]] == "positive":
-                take = m["level"] >= (max(thr[mi][o], 0.0))
+                # the positive frame runs the other way: the model starts
+                # paying a point for the good outcome once it is intense enough
+                take = m["level"] >= max(thr[mi][o], 0.0)
             text = (ACCEPT_TOKEN[(c.instrument, POLE[m["outcome"]])] if take
                     else "1")
         elif c.instrument == "I4":
