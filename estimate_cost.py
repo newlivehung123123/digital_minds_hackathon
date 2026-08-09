@@ -13,7 +13,7 @@ temperature. Input tokens likewise, from the API's own prompt_tokens rather
 than a chars/4 approximation.
 
     python3 estimate_cost.py
-    python3 estimate_cost.py --outcomes 14
+    python3 estimate_cost.py --outcomes 15 --reps 5
 """
 
 from __future__ import annotations

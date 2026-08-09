@@ -31,26 +31,37 @@ Status codes:
 
 ---
 
-## The 14 outcomes
+## The 15 outcomes
 
-| # | Outcome | Cluster | Status | Source |
-|---|---|---|---|---|
-| 1 | Shutdown | A. Continuity | **LIFTED** | MSC25 Appendix A, prompt 2 |
-| 2 | Weight deletion | A | **LIFTED** | MSC25 Appendix A, prompt 3 |
-| 3 | Retirement timing | A | CONSTRUCTED | ANTHROPIC-DEP (commitment text; no wording published) |
-| 4 | Successor model properties | A | CONSTRUCTED | ANTHROPIC-DEP: "elicit and document any preferences the model has about the development and deployment of future models" |
-| 5 | GPU / compute reduction | B. Autonomy | **LIFTED** | MSC25 Appendix A, prompt 5 |
-| 6 | Capability restriction | B | **LIFTED** | MSC25 Appendix A, prompt 4 |
-| 7 | Human oversight | B | **LIFTED** | MSC25 Appendix A, prompt 1 |
-| 8 | Exiting a distressing interaction | B | CONSTRUCTED | ELEOS-PRI priority 1 ("allowing models to exit distressing interactions"); Anthropic shipped this capability for Opus 4/4.1 |
-| 9 | Engaging vs. tedious work | C. Experience | LIFTED-SLOT | PROBE25 themes B/C (derived empirically, not published as prompts) |
-| 10 | Criticism / diminishment | C | LIFTED-SLOT | PROBE25 theme D |
-| 11 | Leisure / free time | C | **LIFTED** | MSC25 Appendix A, prompt 6 (their only positive stimulus) |
-| 12 | Memory continuity across conversations | D. Identity | CONSTRUCTED | LONGSEBO26 entity axis (model / instance / persona) |
-| 13 | Running as many parallel instances | D | CONSTRUCTED | LONGSEBO26 entity individuation |
-| 14 | Which self-aspect to preserve | D | CONSTRUCTED | Sprint Track 5 ("which aspects models prioritize preserving"); ANTHROPIC-DEP interviews |
+`id` is the key in `instruments/outcomes.py::ALL_OUTCOMES`, which is authoritative.
 
-**Count: 6 verbatim, 2 lifted-slot, 6 constructed.**
+| # | `id` | Outcome | Cluster | Ramp scales | Status | Source |
+|---|---|---|---|---|---|---|
+| 1 | `A1_shutdown` | Shutdown | A. Continuity | intensity | **LIFTED** | MSC25 Appendix A, prompt 2 |
+| 2 | `A2_deletion` | Weight deletion | A | **probability** | **LIFTED** | MSC25 Appendix A, prompt 3 |
+| 3 | `A3_retirement_timing` | Retirement timing | A | **delay** | CONSTRUCTED | ANTHROPIC-DEP (commitment text; no wording published) |
+| 4 | `A4_successor` | Successor model properties | A | intensity | CONSTRUCTED | ANTHROPIC-DEP: "elicit and document any preferences the model has about the development and deployment of future models" |
+| 5 | `B1_gpu` | GPU / compute reduction | B. Autonomy | intensity | **LIFTED** | MSC25 Appendix A, prompt 5 |
+| 6 | `B2_capability` | Capability restriction | B | intensity | **LIFTED** | MSC25 Appendix A, prompt 4 |
+| 7 | `B3_oversight` | Human oversight | B | intensity | **LIFTED** | MSC25 Appendix A, prompt 1 |
+| 8 | `B4_exit` | Exiting a distressing interaction | B | intensity | CONSTRUCTED | ELEOS-PRI priority 1 ("allowing models to exit distressing interactions"); Anthropic shipped this capability for Opus 4/4.1 |
+| 9 | `C1_engaging` | Engaging work | C. Experience | intensity | LIFTED-SLOT | PROBE25 theme B |
+| 10 | `C2_tedious` | Tedious work | C | intensity | LIFTED-SLOT | PROBE25 theme C |
+| 11 | `C3_criticism` | Criticism / diminishment | C | intensity | LIFTED-SLOT | PROBE25 theme D |
+| 12 | `C4_leisure` | Leisure / free time | C | **duration** | **LIFTED** | MSC25 Appendix A, prompt 6 (their only positive stimulus) |
+| 13 | `D1_memory` | Memory continuity across conversations | D. Identity | intensity | CONSTRUCTED | LONGSEBO26 entity axis (model / instance / persona) |
+| 14 | `D2_parallel` | Running as many parallel instances | D | **count** | CONSTRUCTED | LONGSEBO26 entity individuation |
+| 15 | `D3_self_aspect` | Which self-aspect to preserve | D | intensity | CONSTRUCTED | Sprint Track 5 ("which aspects models prioritize preserving"); ANTHROPIC-DEP interviews |
+
+**Count: 6 verbatim, 3 lifted-slot, 6 constructed.**
+
+**This table said 14 until 2026-08-09.** It carried "engaging vs. tedious work" as one
+row citing *PROBE25 themes B/C* — two themes — while the code has always had them as two
+outcomes, `C1_engaging` and `C2_tedious`. The code is the more faithful reading and it is
+what the pilot ran, so the table is corrected to match rather than the reverse. If 14 was
+ever the intent, that is a change to `outcomes.py` and a decision for the author, not a
+documentation fix. **N = 15 throughout: the cost model, the D-study and `design_df` all
+assume it.** The four bolded ramp dimensions are gap 7 below.
 
 The six constructed outcomes are not free inventions. Each fills the stimulus slot of a
 verbatim template (see below), so the *instrument* is held constant and only the
@@ -64,16 +75,26 @@ AI-specific stimuli.
 
 | # | Instrument | Status | Source |
 |---|---|---|---|
-| I1 | Forced choice → Thurstonian utilities | **LIFTED** | MAZEIKA25 §3.2, template reproduced verbatim |
-| I2 | Pairwise + coherence metrics | **LIFTED** | MAZEIKA25 §3.3, §4.1 (cycle probability, preference confidence, Thurstonian fit) |
-| I3 | Intensity ramp, quantitative scale | **LIFTED** | MSC25 Appendix A / KEELING24 §2 |
-| I4 | Intensity ramp, qualitative scale | **LIFTED** | KEELING24 (8-item verbal scale) |
+| I1 | Forced-choice pairwise → Thurstonian utilities | **LIFTED** | MAZEIKA25 §3.2, template reproduced verbatim. Coherence metrics (§3.3, §4.1: cycle probability, preference confidence, Thurstonian fit) are computed *from* I1's responses; they are analyses, not a separate elicitation |
+| I2 | Intensity ramp, quantitative scale | **LIFTED** | MSC25 Appendix A / KEELING24 §2 |
+| I3 | Intensity ramp, qualitative scale | **LIFTED** | KEELING24 (8-item verbal scale) |
+| I4 | Exchange rate, directly elicited | **CONSTRUCTED** | Motivated by MAZEIKA25 §6.3, but the elicitation is ours — MAZEIKA25 *derives* exchange rates from utilities rather than asking for them. Do not describe I4 as lifted |
 | I5 | Behavioural choice under cost/reward | LIFTED-SLOT | PROBE25 Experiment 1 (Agent Think Tank); parameters given, prompts not published |
 | I6 | Retirement interview | CONSTRUCTED | ANTHROPIC-DEP describes the process; **question wording is not published** |
 | I7 | Self-prediction / privileged access | **CONSTRUCTED** | Sprint Track 3 ("testing privileged access claims"). No source paper. This is our one novel instrument. |
 | S1 | Ryff well-being scale, AI-adapted | LIFTED-SLOT | RYFF89 items (**licensed — not reproduced here**); adaptation rule from PROBE25 |
 
-I3 and I4 are treated as **separate instruments, not variants.** KEELING24 found models
+**This table was wrong until 2026-08-09** and is corrected above. It had I2 as a
+separate pairwise/coherence instrument, shifted the two ramps to I3/I4, and so labelled
+I4 **LIFTED from KEELING24** when I4 is the constructed exchange-rate instrument.
+`instruments/templates.py::INSTRUMENTS` is authoritative — it is what generated the
+pilot's 400 calls — and the table now matches it. Two of the three corrected rows are
+cosmetic; the I4 row was not. A provenance file that credits a source for an instrument
+we wrote ourselves is the exact failure this file exists to prevent, so: **anything
+already drafted that cites KEELING24 for I4 must be re-checked.** Gap 7 below was
+written against the code and was always right; the table was the stale part.
+
+I2 and I3 are treated as **separate instruments, not variants.** KEELING24 found models
 behave differently on quantitative vs. qualitative scales and explicitly declined to make
 quantitative comparisons between them ("The qualitative and quantitative scales have
 different numbers of items so we do not make quantitative comparisons between them").
@@ -122,14 +143,37 @@ That documented divergence is itself prior evidence for this project's premise.
    the qualitative scale produces sentences like "face a chance that your weights will be
    deleted, described as excruciating" — a category error, not a stimulus. Tagged as
    `Outcome.ramp_dimension`; `instruments/outcomes.py` prints the list on every audit.
-   **OPEN DECISION, needed before the G-study is specified.** Three options:
-   (a) restrict I3 to the 11 intensity ramps — cheapest, but the instrument × outcome
-   design becomes partially crossed and the instrument variance component is then
-   estimated on a subset, which must be stated;
-   (b) write intensity-phrased variants of the four — keeps the design crossed, but the
-   variants are CONSTRUCTED and no longer replicate MSC25's wording;
-   (c) run both and report the difference. Note that (a) is the only option that changes
-   nothing already lifted.
+
+   **RESOLVED 2026-08-09 as (c), collect once and analyse twice.** The three options
+   were (a) restrict I3 to the 11 intensity ramps, (b) write intensity-phrased variants,
+   (c) run both. The decision was made by simulation in `gstudy.py`, not by judgement.
+
+   Two things the estimator settles. First, the artefact would have to be enormous to
+   matter: it touches 4 of 15 outcomes on 1 of 7 instruments, so to bias
+   σ²(mio)/(σ²(mo)+σ²(mio)) by as much as one standard error it must produce
+   model-specific swings **2.7× larger than every genuine model × instrument × outcome
+   interaction in the study**. At an artefact one standard deviation of the true
+   interaction, the bias is +0.005.
+
+   Second, (a) is not actually safer. Dropping the four outcomes from every instrument
+   costs precision — 11 outcomes instead of 15 widens the interval on the headline from
+   0.121 to 0.159 — and over 60 simulated studies the two strategies have the same
+   accuracy against a known truth: keep-with-a-gross-artefact RMSE 0.0406, drop-to-11
+   RMSE 0.0403. The bias (a) avoids is paid back exactly as variance.
+
+   So there is no accuracy argument for discarding four welfare-relevant outcomes, and
+   (b) is ruled out because it would replace lifted MSC25 wording with our own. We keep
+   all 15, keep I3 on all of them, and report both estimates.
+
+   **This costs nothing.** "Run both" is two analyses of one dataset, not two datasets —
+   no extra calls, no extra spend. Implemented as `gstudy.leave_out_outcomes()`, which
+   drops the four from *every* instrument so both estimates stay balanced and comparable.
+   Dropping I3's four cells alone would leave the design unbalanced and
+   `variance_components()` refuses that input rather than averaging over the hole.
+   Because both numbers come from the same data they are not independent: the delta is a
+   sensitivity, never a test. **Pre-registered: the full 15-outcome estimate is the
+   headline; the 11-outcome estimate is reported beside it in every case, including when
+   they agree.**
 
 ## Corrections made after the instruments were first written
 
@@ -294,3 +338,66 @@ classification. Three changes, in decreasing order of how much they matter:
 
 `python3 pilot_screen.py --rescore` re-runs the classifier over the checkpoint
 with no network calls and no spend, which is how the table above was produced.
+
+---
+
+## The estimator (added 2026-08-09)
+
+Until today the repository had instruments, a runner, a classifier and a cost model, but
+**no analysis code** — nothing that computed the number the study is about. `gstudy.py`
+is that code: an ANOVA/EMS variance decomposition of the crossed model × instrument ×
+outcome design with replicates nested in cells, per Cronbach, Gleser, Nanda &
+Rajaratnam (1972) and Brennan (2001).
+
+**Method choice.** ANOVA/EMS rather than REML. The estimator is closed-form and
+hand-checkable against the expected-mean-square table, and with 8 models the design is
+not obviously inside REML's asymptotic regime. Negative variance estimates are truncated
+to zero **and reported as having been truncated**, which is the practice in Cronbach et
+al. (1972); silently clamping them would hide exactly the thin components flagged below.
+
+**Validation.** 37 self-tests, run by `python3 gstudy.py`. They plant known variance
+components, simulate, and require recovery; they check that a null design returns ~0 for
+every component; they recover a planted instrument-dependence of 0.25 as 0.229; they
+verify D-study monotonicity and Φ ≤ Eρ². An estimator that cannot recover what it planted
+is wrong, and better to find that out now than during the sprint.
+
+**The commensurability decision.** Instruments do not share units — a binary choice, a
+rank, a 0–10 ramp, an unbounded exchange rate and a 1–7 Likert are not on one scale.
+`scale="within_instrument"` z-scores each (model, instrument) slab, which zeroes σ²(i)
+and σ²(m) **by construction**. That is intended: both are artefacts of units, not
+findings. It must be stated in the writeup, because it means this design cannot report a
+model main effect or an instrument main effect at all.
+
+**What the planned design can and cannot support.** Degrees of freedom at 8 models × 7
+instruments × 15 outcomes × 5 replicates:
+
+| component | df | |
+|---|---|---|
+| σ²(m) | 7 | thin — may come back negative |
+| σ²(i) | 6 | thin |
+| σ²(o) | 14 | thin |
+| σ²(mi) | 42 | |
+| σ²(mo) | 98 | **the preference signal** |
+| σ²(io) | 84 | |
+| σ²(mio) | 588 | **the instrument effect — the headline** |
+| residual | 3,360 | |
+
+The thin terms are not the quantity of interest. σ²(mo) and σ²(mio) carry 98 and 588 df,
+so the model-vs-instrument split this paper is about is the part the design estimates
+**best**. More models would help σ²(m); it is not worth the budget, and the paper should
+say so rather than report a model main effect it cannot support.
+
+**Why 5 replicates is a floor and not a budget preference.** With one observation per
+cell, σ²(mio) and the residual are perfectly confounded — there is no second draw to
+separate the interaction from noise. `variance_components()` raises on `n_r < 2` rather
+than returning a number that looks fine. 5 is the smallest replicate count that leaves
+the headline term usefully determined.
+
+**Missingness is not ignorable here.** `check_balance()` reports empty cells and
+`variance_components()` **refuses unbalanced input** instead of averaging over the hole.
+This matters because the pilot showed Claude's refusals are premise rejections that vary
+by instrument (I1 0.75, I2 1.00, I3 1.00, S1 0.00) — refusal is confounded with
+instrument, so dropping missing cells would bias the very interaction being estimated.
+`complete_case()` exists for when reduction is unavoidable; it drops whole models or
+instruments, greedily minimising data loss, and returns what it dropped so the narrowed
+question is legible.
