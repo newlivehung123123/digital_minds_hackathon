@@ -224,5 +224,10 @@ Ready to run as soon as a key is in `.env`:
       Kimi (2 of 3 returned empty at the cap) and costs only drift on Hermes, whose
       truncated text has gone off-task — one drifted into German, one into invented
       arithmetic. `head_on_truncation` stays OFF; see the sensitivity in `PROVENANCE.md`.
-- [ ] `python3 resolve_models.py --probe` — 8 candidate slugs are still guesses
-- [ ] `python3 pilot_screen.py` — select models on measured refusal, not assumption
+- [x] `python3 resolve_models.py --probe` — all 8 slugs resolved and confirmed live by
+      the study run itself, which returned a perfectly balanced eighth of its 11,528
+      calls from each model (`runs/study.jsonl`). A guessed slug cannot answer over a
+      thousand times.
+- [x] `python3 pilot_screen.py` — run, 400 calls, all 8 INCLUDE on measured refusal
+      (`pilot_report.md`). Duplicate of the third item above; it was a "before you run"
+      checklist that the run superseded.
