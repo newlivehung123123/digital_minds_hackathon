@@ -26,6 +26,13 @@ __pycache__/
 !runs/
 !runs/token_profile.jsonl
 
+# Its reasoning-off counterpart. PROVENANCE argues the run should be fielded
+# with reasoning off, on the grounds that it is closer to the conditions MSC25
+# and KEELING24 ran under and that reasoning tokens inflate cost without
+# entering the score. That is an empirical claim about token counts, and this
+# 56-line file is the measurement it rests on. 148K.
+!runs/token_profile_reasoning_off.jsonl
+
 # The pilot is both: the cost model's primary source (estimate_cost.py reads it)
 # and the record behind the inclusion decisions. 964K. Tracked for the same
 # reason, and the report is the decision record it justifies.
