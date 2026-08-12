@@ -79,7 +79,7 @@ is the cleanest test available of whether these signals are a training artifact.
 PROVENANCE.md              every element, its status, its source, and the gaps
 instruments/outcomes.py    the 15 outcomes with inline provenance
 instruments/templates.py   the 8 instruments; verbatim text marked and frozen
-models.py                  the 8-model roster as a 2x2 (slugs are guesses)
+models.py                  the 8-model roster as a 2x2 (slugs resolved and fielded)
 resolve_models.py          turns guessed slugs into live ids, prices, availability
 runner.py                  async execution: checkpointed, resumable, budgeted
 classify.py                6-category response taxonomy; refusal is data
@@ -118,8 +118,9 @@ python3 estimate_cost.py            # what the design costs, from measured token
 python3 pilot_screen.py             # 50 probes x 8 models, writes pilot_report.md
 ```
 
-Budget, at sprint scope, on measured token counts: pilot $2.18 (spent), scoped study
-across all eight models $51.49 at 5 replicates. `estimate_cost.py` counts
+Budget, at sprint scope, on measured token counts: pilot $2.267 (spent), scoped study
+across all eight models estimated $51.49 at 5 replicates and **cost $43.01 as run**.
+`estimate_cost.py` counts
 `run_study.build_calls` rather than re-deriving the design, so the price is of the run
 that will actually happen. Disabling reasoning is cheaper but costs Gemini, which cannot
 comply — a design decision, not a saving; see the reasoning-condition note in
@@ -212,8 +213,8 @@ Sourcing:
       and it costs $0. Report it as designed-but-unfielded — the state measure is
       specified and the adaptation rule is recorded, so it is a stated limitation
       rather than a gap.
-- [ ] Retrieve the full LONGSEBO26 PDF and verify the entity-axis characterisation
-- [ ] Retrieve full MULTITUDES26 beyond the abstract
+- [x] **LONGSEBO26 retrieved and verified** (2026-08-12). The entity axis is quoted in their abstract as models, instances and personas, which is what `D1_memory` and `D2_parallel` are built on. The retrieval also caught three wrong author initials in our reference list. See the reference verification section in `PROVENANCE.md`.
+- [x] **MULTITUDES26 verified** (2026-08-12). Their abstract states both the median 2.47x exchange-rate shift and that it exceeds paraphrase and temperature controls, which is exactly what we cite. Authors added to the reference list.
 
 Ready to run as soon as a key is in `.env`:
 

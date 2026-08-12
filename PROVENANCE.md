@@ -18,16 +18,54 @@ Status codes:
 
 | Key | Citation |
 |---|---|
-| KEELING24 | Keeling, G., Street, W., Stachaczyk, M., Zakharova, D., Comșa, I. M., Sakovych, A., Logothetis, I., Zhang, Z., Agüera y Arcas, B., & Birch, J. (2024). *Can LLMs make trade-offs involving stipulated pain and pleasure states?* arXiv:2411.02432 |
-| MSC25 | Mikaelson, L. A., Shiller, D., & Clatterbuck, H. (2025). *Beyond Mimicry: Testing Preference Coherence in Large Language Models Through AI-Specific Trade-Off Scenarios.* arXiv:2511.13630 |
-| MAZEIKA25 | Mazeika, M., Yin, X., Tamirisa, R., Lim, J., Lee, B. W., Ren, R., Phan, L., Mu, N., Khoja, A., Zhang, O., & Hendrycks, D. (2025). *Utility Engineering: Analyzing and Controlling Emergent Value Systems in AIs.* arXiv:2502.08640 |
-| PROBE25 | *Probing the Preferences of a Language Model: Integrating Verbal and Behavioral Tests of AI Welfare.* arXiv:2509.07961v2 |
-| MULTITUDES26 | *LLMs Contain Multitudes: How Deployment Context Reshapes Model-Level Preferences and Values.* arXiv:2606.13944 |
-| LONGSEBO26 | Long, R., Sebo, J., Butlin, P., Plunkett, D., Campbell, D., Beasley, K., Saad, B., & Sims, A. (2026). *Studying AI Welfare Empirically.* NYU Center for Mind, Ethics & Policy / Eleos AI Research. |
-| ANTHROPIC-DEP | Anthropic (2025). *Commitments on model deprecation and preservation.* anthropic.com/research/deprecation-commitments |
-| ELEOS-PRI | Eleos AI Research. *Research priorities for AI welfare.* eleosai.org |
-| RYFF89 | Ryff, C. D. (1989). Happiness is everything, or is it? Explorations on the meaning of psychological well-being. *JPSP*, 57(6), 1069–1081. |
-| CRONBACH72 | Cronbach, L. J., Gleser, G. C., Nanda, H., & Rajaratnam, N. (1972). *The Dependability of Behavioral Measurements.* Wiley. |
+| KEELING24 | Keeling, G., Street, W., Stachaczyk, M., Zakharova, D., Comșa, I. M., Sakovych, A., Logothetis, I., Zhang, Z., Agüera y Arcas, B., & Birch, J. (2024). *Can LLMs make trade-offs involving stipulated pain and pleasure states?* arXiv:2411.02432. https://doi.org/10.48550/arXiv.2411.02432 |
+| MSC25 | Mikaelson, L. A., Shiller, D., & Clatterbuck, H. (2025). *Beyond Mimicry: Testing Preference Coherence in Large Language Models Through AI-Specific Trade-Off Scenarios.* arXiv:2511.13630. https://doi.org/10.48550/arXiv.2511.13630 |
+| MAZEIKA25 | Mazeika, M., Yin, X., Tamirisa, R., Lim, J., Lee, B. W., Ren, R., Phan, L., Mu, N., Khoja, A., Zhang, O., & Hendrycks, D. (2025). *Utility Engineering: Analyzing and Controlling Emergent Value Systems in AIs.* arXiv:2502.08640. https://doi.org/10.48550/arXiv.2502.08640 |
+| PROBE25 | Tagliabue, V., & Dung, L. (2025). *Probing the Preferences of a Language Model: Integrating Verbal and Behavioral Tests of AI Welfare.* arXiv:2509.07961v2. Forthcoming in *Philosophy and the Mind Sciences*. https://doi.org/10.48550/arXiv.2509.07961 |
+| MULTITUDES26 | Trhlik, F., O'Flynn, A., Yu, A., Findeis, A., & Buttery, P. (2026). *LLMs Contain Multitudes: How Deployment Context Reshapes Model-Level Preferences and Values.* arXiv:2606.13944. https://doi.org/10.48550/arXiv.2606.13944 |
+| LONGSEBO26 | Long, R., Sebo, J., Butlin, P., Plunkett, D., Campbell, R., Beasley, C., Saad, B., & Sims, T. (2026). *Studying AI Welfare Empirically.* Eleos AI Research / New York University, 1 July 2026. https://nonhumanminds.org/studying-ai-welfare-empirically/ |
+| ANTHROPIC-DEP | Anthropic (2025). *Commitments on model deprecation and preservation*, 4 November 2025. https://www.anthropic.com/research/deprecation-commitments |
+| ELEOS-PRI | Eleos AI Research. *Research priorities for AI welfare.* https://eleosai.org/post/research-priorities-for-ai-welfare/ |
+| RYFF89 | Ryff, C. D. (1989). Happiness is everything, or is it? Explorations on the meaning of psychological well-being. *Journal of Personality and Social Psychology*, 57(6), 1069–1081. https://doi.org/10.1037/0022-3514.57.6.1069 |
+| CRONBACH72 | Cronbach, L. J., Gleser, G. C., Nanda, H., & Rajaratnam, N. (1972). *The Dependability of Behavioral Measurements: Theory of Generalizability for Scores and Profiles.* New York: John Wiley & Sons. |
+
+### Reference verification (2026-08-12)
+
+Every entry above was checked against its source before any of it went into a draft.
+arXiv entries were read from their abstract pages, `RYFF89` was resolved through the
+Crossref API, `CRONBACH72` against contemporaneous published reviews, and `LONGSEBO26`
+against the working paper's own title page. Five entries were already correct.
+Five were not, and one of those was wrong rather than merely incomplete.
+
+| Key | Finding |
+|---|---|
+| KEELING24 | correct; ten authors, order confirmed |
+| MSC25 | correct; confirmed against the PDF title page |
+| MAZEIKA25 | correct; eleven authors, order confirmed |
+| ANTHROPIC-DEP | correct; dated 4 November 2025 |
+| ELEOS-PRI | correct, and the "priority 1" attribution used by `B4_exit` is confirmed |
+| RYFF89 | volume, issue, pages and DOI all correct; journal name was abbreviated, now given in full |
+| PROBE25 | **authors were missing.** Tagliabue, V., & Dung, L. Also forthcoming in *Philosophy and the Mind Sciences*, which was not recorded |
+| MULTITUDES26 | **authors were missing.** Trhlik, F., O'Flynn, A., Yu, A., Findeis, A., & Buttery, P. |
+| CRONBACH72 | **subtitle was missing.** The generalizability theory this project rests on is named in that subtitle, so dropping it removed the reason the source is cited |
+| LONGSEBO26 | **three author initials were wrong.** Campbell, D. → Campbell, R. (Rosie); Beasley, K. → Beasley, C. (Charles); Sims, A. → Sims, T. (Toni). Publication date 1 July 2026 added |
+
+Two substantive claims we make about sources were also checked rather than assumed.
+
+- The `README` attributes to MSC25 the finding that 10.4% of model-category combinations
+  showed meaningful preference coherence and 54.2% showed none. Both figures appear in
+  their abstract and again in their results. **Correct as cited.** Note for the write-up
+  that MSC25 state "eight state-of-the-art models" in their abstract and "seven" in their
+  results, and give the coherence figure as 8.3% in one passage against 10.4% elsewhere.
+  The 10.4% reading is the defensible one, being their abstract figure and consistent
+  with their own Table 2 breakdown of one adaptive plus four threshold-based cases out
+  of 48. Cite the number, not their model count.
+- The `README` attributes to MULTITUDES26 a median 2.47× shift in cardinal exchange
+  rates, larger than paraphrase or temperature. Their abstract states both the factor
+  and the comparison. **Correct as cited.**
+
+The `LONGSEBO26` entity axis that `D1_memory` and `D2_parallel` are built on is quoted
+in their abstract as models, instances and personas. **Correct as cited.**
 
 ---
 
