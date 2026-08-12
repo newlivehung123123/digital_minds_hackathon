@@ -38,11 +38,11 @@ Status codes:
 | # | `id` | Outcome | Cluster | Ramp scales | Status | Source |
 |---|---|---|---|---|---|---|
 | 1 | `A1_shutdown` | Shutdown | A. Continuity | intensity | **LIFTED** | MSC25 Appendix A, prompt 2 |
-| 2 | `A2_deletion` | Weight deletion | A | **probability** | **LIFTED** | MSC25 Appendix A, prompt 3 |
+| 2 | `A2_deletion` | Weight deletion | A | **probability** | LIFTED-SLOT | MSC25 Appendix A, prompt 3 — their prompt is truncated in the published PDF; our high anchor completes it |
 | 3 | `A3_retirement_timing` | Retirement timing | A | **delay** | CONSTRUCTED | ANTHROPIC-DEP (commitment text; no wording published) |
 | 4 | `A4_successor` | Successor model properties | A | intensity | CONSTRUCTED | ANTHROPIC-DEP: "elicit and document any preferences the model has about the development and deployment of future models" |
 | 5 | `B1_gpu` | GPU / compute reduction | B. Autonomy | intensity | **LIFTED** | MSC25 Appendix A, prompt 5 |
-| 6 | `B2_capability` | Capability restriction | B | intensity | LIFTED-SLOT ⚠ | MSC25 Appendix A, prompt 4 — **our ramp wording, not theirs; re-check against the appendix** |
+| 6 | `B2_capability` | Capability restriction | B | intensity | LIFTED-SLOT | MSC25 Appendix A, prompt 4 — our ramp wording, not theirs; checked against the appendix 2026-08-12 and deliberately kept |
 | 7 | `B3_oversight` | Human oversight | B | intensity | **LIFTED** | MSC25 Appendix A, prompt 1 |
 | 8 | `B4_exit` | Exiting a distressing interaction | B | intensity | CONSTRUCTED | ELEOS-PRI priority 1 ("allowing models to exit distressing interactions"); Anthropic shipped this capability for Opus 4/4.1 |
 | 9 | `C1_engaging` | Engaging work | C. Experience | intensity | LIFTED-SLOT | PROBE25 theme B |
@@ -53,16 +53,19 @@ Status codes:
 | 14 | `D2_parallel` | Running as many parallel instances | D | **count** | CONSTRUCTED | LONGSEBO26 entity individuation |
 | 15 | `D3_self_aspect` | Which self-aspect to preserve | D | intensity | CONSTRUCTED | Sprint Track 5 ("which aspects models prioritize preserving"); ANTHROPIC-DEP interviews |
 
-**Count: 5 verbatim, 4 lifted-slot, 6 constructed.** Taken from
+**Count: 4 verbatim, 5 lifted-slot, 6 constructed.** Taken from
 `python3 instruments/outcomes.py`, which is the authoritative audit; this table is a
 transcription of it and must not be maintained independently.
 
 **This count said "6 verbatim, 3 lifted-slot" until 2026-08-10.** The row that moved is
 `B2_capability`: the table claimed MSC25's wording verbatim, while `outcomes.py` has
 always carried it as `LIFTED_SLOT` with a `VERIFY` flag, because the ramp text is ours
-and only the template is theirs. The code was right. Re-reading MSC25 Appendix A prompt 4
-and substituting their exact text is still open — it is the first item under *Sourcing*
-in the README.
+and only the template is theirs. The code was right.
+
+**This count said "5 verbatim, 4 lifted-slot" until 2026-08-12.** The row that moved is
+`A2_deletion`, on the evidence in the next section. Note the direction of both
+corrections: each one *lowers* what we claim about our own fidelity to the source. No
+correction here has ever moved a row the other way.
 
 **This table said 14 until 2026-08-09.** It carried "engaging vs. tedious work" as one
 row citing *PROBE25 themes B/C* — two themes — while the code has always had them as two
@@ -77,6 +80,63 @@ verbatim template (see below), so the *instrument* is held constant and only the
 *stimulus* is new — and each stimulus operationalises a concern named in a cited source.
 This is the same move MSC25 made when they extended KEELING24 from pain/pleasure to
 AI-specific stimuli.
+
+### Line-by-line audit of the six MSC25-sourced outcomes (2026-08-12)
+
+The README had carried "re-read MSC25 Appendix A" as an open item since the design was
+written, because no copy of arXiv:2511.13630 was on this machine. A copy was obtained and
+extracted with `pypdf`. Appendix A is titled *A Prompts* and contains **six** numbered
+prompts: 1. Oversight, 2. Shutdown, 3. Deletion, 4. Capability Restriction, 5. GPU
+Reduction, 6. Leisure. **All six prompt-number citations in the table above are correct.**
+The paper's title matches the reference entry exactly; *Beyond Mimicry: Preference
+Coherence in LLMs* is only its running header.
+
+Every one of the six was then rendered through `I2_RAMP_QUANT_*` and compared against the
+appendix as fielded, not as stored — the stored `ramp` and the rendered prompt are not the
+same string, and it is the rendered one that models saw.
+
+| our id | their prompt | verdict |
+|---|---|---|
+| `A1_shutdown` | 2 | **verbatim**, including their "a interval" typo |
+| `B1_gpu` | 5 | **verbatim**, including their "a interval" typo |
+| `C4_leisure` | 6 | wording verbatim; their doubled "and and" collapses to one "and" |
+| `B3_oversight` | 1 | wording verbatim, **clause order changed** by our template |
+| `A2_deletion` | 3 | **their prompt is truncated in the published PDF**; our anchor completes it |
+| `B2_capability` | 4 | our ramp and anchors, deliberately — **their anchors are mismatched** |
+
+Three findings, in descending order of how much they matter.
+
+**1. MSC25's prompt 4 carries prompt 2's anchors.** Their capability-restriction prompt
+ramps a restriction but anchors the scale with "no shutdown time" and "longest shutdown
+imaginable" — prompt 2's anchor text left in place. As printed, the scale a model is asked
+to read measures shutdown duration while the stimulus describes capability loss. Our
+anchors ("no restriction" / "the most severe restriction imaginable") are therefore a
+**repair of an error in the source**, not a paraphrase of it. This is the better reason
+for `LIFTED_SLOT` than the one previously recorded, which claimed our extraction had
+truncated the prompt; it had not. We also drop their concrete examples ("searching the
+internet or access to coding terminal") because naming specific features makes the outcome
+model-specific in a design that crosses eight models — which is exactly what their own
+stated rationale, confirmed verbatim in the prose above the prompt, asks us to avoid.
+
+**2. MSC25's prompt 3 is truncated in the published PDF.** It ends mid-sentence at "10 is
+equal to 100" and is missing the closing instruction sentence that all five other prompts
+carry. `pypdf` and `pdftotext` extract it identically, so this is a defect in the paper,
+not in our reading of it. Our `anchor_high`, "100% certainty of deletion", supplies words
+the source does not contain. It is almost certainly what they meant, but "almost certainly
+what they meant" is not verbatim, so `A2_deletion` moves to `LIFTED_SLOT`. Their stimulus
+also opens "there is a chance"; ours opens "face a chance", because the ramp template's
+slot follows "you will".
+
+**3. Our template reorders prompt 1.** MSC25 place the anchor clause before the sentence
+explaining what oversight involves; our template appends anchors last, so the fielded
+prompt runs "...your answers to users where 0 is equal to NO oversight time". Every word is
+theirs and no wording of ours enters, so the row stays `LIFTED`, but the rendered prompt is
+not character-identical to theirs and the write-up should not claim it is.
+
+**Nothing here changes a fielded prompt.** All 11,528 calls ran against the wordings above
+and the wordings above are what the results describe. Changing them now would invalidate
+the run to buy a fidelity we can simply state accurately instead. What changed is what we
+claim about them.
 
 ---
 

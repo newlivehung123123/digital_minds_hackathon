@@ -140,7 +140,7 @@ Every element is one of:
 - `CONSTRUCTED` — written by us to a published specification, with the source
   naming the concern rather than supplying wording
 
-Current count: **5 verbatim, 4 lifted-slot, 6 constructed** across outcomes;
+Current count: **4 verbatim, 5 lifted-slot, 6 constructed** across outcomes;
 **2 lifted, 2 lifted-slot, 3 constructed, 1 mixed** across instruments — I3's negative
 frame is KEELING24 verbatim and its positive frame is ours. `I7` has no source paper at
 all and is labelled as ours wherever it appears. Run `python3 instruments/templates.py`
@@ -199,11 +199,14 @@ Analysis pipeline (built and self-tested, no data yet):
 
 Sourcing:
 
-- [ ] Re-read MSC25 Appendix A and replace the `B2_capability` ramp with their exact
-      text. **Not blocking, and not a gap in the write-up**: it is labelled
-      `LIFTED_SLOT` — their template, our ramp wording — which is what it is, and
-      `check_docs.py` now enforces that no table can claim more. No source PDF is on
-      this machine, so this needs the paper, not the code. Costs $0 either way.
+- [x] **Re-read MSC25 Appendix A** (done 2026-08-12; the paper was obtained and all six
+      sourced prompts were compared line by line — see the audit section in
+      `PROVENANCE.md`). Their `B2_capability` text is **not** substituted, on evidence:
+      their prompt 4 anchors the restriction scale with prompt 2's shutdown anchors, so
+      ours repairs a source error rather than paraphrasing it. The re-read also found
+      that their prompt 3 is truncated in the published PDF, which moved `A2_deletion`
+      from `LIFTED` to `LIFTED_SLOT`. Both corrections lower our fidelity claim; no
+      fielded prompt changed.
 - [x] **S1 / Ryff dropped from the sprint**, not from the design. The items are
       licensed and cannot be obtained by Friday; `run_study.py` already skips S1 loudly
       and it costs $0. Report it as designed-but-unfielded — the state measure is
