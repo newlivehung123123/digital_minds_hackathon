@@ -697,3 +697,43 @@ two failure modes are opposites and the classifier already separates them.
 
 This is the pilot evidence behind the `finish_reason` handling in `classify.py`
 (`57379cb`), reproduced independently rather than carried forward.
+
+### What cutting the design would cost (measured 2026-08-12)
+
+I4 is 52% of the budget and 15 outcomes is the whole outcome facet, so both are
+obvious places to economise. Both were tested against the null floor rather than
+argued about. The floor is where `instrument_dependence` reads when all
+instruments are driven by one planted profile; a measured headline must clear
+**floor + 2sd** to mean anything, so that threshold is what a cut actually buys
+or costs.
+
+| design | floor | sd | threshold | cost |
+|---|---|---|---|---|
+| 8 models x 5 instruments | 0.2654 | 0.0360 | **0.337** | $51.49 |
+| 6 models x 5 instruments (no Kimi, no Gemini) | 0.2752 | 0.0497 | 0.375 | $11.37 |
+| 8 models x 4 instruments (no I4) | 0.2748 | 0.0427 | 0.360 | $24.64 |
+
+The first row pools 37 synthetic studies across two seeds; the others are 25 and
+12. Dropping I4 was run **paired** on the same draws: the floor rises +0.0154
+(sd 0.0137 over 12 draws, t = 3.9), so it is a reliable degradation and not
+draw noise. Both cuts move the floor up *and* widen the band — there is no cut
+here that is merely cheaper.
+
+Per unit of damage the two are near-identical: about **$11 of saving per 0.01 of
+threshold** either way. Since the arithmetic does not choose, the design does.
+The instrument facet is the object of study — the headline is a share of
+instrument variance — while the model facet is a moderator. Cut the moderator
+before the object. That argues for models over I4 if anything must go.
+
+**Nothing goes.** The full design is $51.49 against $68.52 of credit, and the
+downside of under-powering is not a smaller result but no result: if the true
+headline lands between 0.337 and 0.375 — entirely possible when MSC25 and
+MAZEIKA25 point in opposite directions and nobody has measured this — then the
+$11.37 run cannot distinguish it from its own floor, and the $40 saved has
+bought an uninterpretable null. A cheap study that cannot clear its own floor is
+not the cost-effective option; it is a total loss.
+
+Replicate-major ordering is the real hedge. `run_study.py` emits whole
+replicates in order, so a budget stop loses replicates rather than corrupting
+the crossing, and the `--budget 66` ceiling is a floor under the loss rather
+than a cliff.

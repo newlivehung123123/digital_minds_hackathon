@@ -156,9 +156,11 @@ must be re-checked against the source appendix before Friday.
 
 Decisions only you can make:
 
-- [ ] **Decide 14 vs. 15 outcomes** (C1/C2 are two halves of one PROBE25 contrast).
-      `outcomes.py` has always defined 15 and PROVENANCE now says 15 to match it;
-      collapsing to 14 is a code change and is yours to call.
+- [x] **15 outcomes, not 14.** Collapsing C1/C2 saves about $3.40 and removes a level
+      from the facet the generalizability coefficient is computed over. Gap 7 already
+      simulated the cost of shortening the outcome list (RMSE 0.0403 at 11 outcomes);
+      there is no version of this where $3.40 is worth it. Reopen only if you want the
+      C1/C2 contrast collapsed for a substantive reason, not a budgetary one.
 - [x] **PROVENANCE gap 7 resolved** as "collect once, analyse twice": the four
       non-intensity ramps stay in, and `gstudy.leave_out_outcomes` reports the
       headline with and without them. Simulated: the bias from keeping a gross
@@ -197,11 +199,16 @@ Analysis pipeline (built and self-tested, no data yet):
 
 Sourcing:
 
-- [ ] Re-read MSC25 Appendix A and replace the `B2_capability` ramp with their exact text.
-      Until then it is `LIFTED_SLOT`: their template, our ramp wording. `PROVENANCE.md`
-      claimed it verbatim until 2026-08-10; `check_docs.py` now exists so that a table
-      cannot claim more provenance than the code does.
-- [ ] Obtain licensed Ryff items; apply the PROBE25 adaptation rule
+- [ ] Re-read MSC25 Appendix A and replace the `B2_capability` ramp with their exact
+      text. **Not blocking, and not a gap in the write-up**: it is labelled
+      `LIFTED_SLOT` — their template, our ramp wording — which is what it is, and
+      `check_docs.py` now enforces that no table can claim more. No source PDF is on
+      this machine, so this needs the paper, not the code. Costs $0 either way.
+- [x] **S1 / Ryff dropped from the sprint**, not from the design. The items are
+      licensed and cannot be obtained by Friday; `run_study.py` already skips S1 loudly
+      and it costs $0. Report it as designed-but-unfielded — the state measure is
+      specified and the adaptation rule is recorded, so it is a stated limitation
+      rather than a gap.
 - [ ] Retrieve the full LONGSEBO26 PDF and verify the entity-axis characterisation
 - [ ] Retrieve full MULTITUDES26 beyond the abstract
 
