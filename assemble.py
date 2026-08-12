@@ -10,6 +10,7 @@ per outcome. This file is the wiring: it reads the checkpoint, groups records by
     python3 assemble.py --selftest            # synthetic data, no network
     python3 assemble.py --i23 logistic        # switch point instead of the default
     python3 assemble.py --include-deflection  # count DEFLECTION answers as data
+    python3 assemble.py --head-on-truncation  # read the first line of a cut-off answer
 
 THE DESIGN IS READ, NOT ASSUMED. Every grouping key comes out of each record's
 own `meta`, which `run_study.build_calls` wrote. Nothing here re-derives the
@@ -89,23 +90,34 @@ def load(path: Path) -> list[dict]:
     return rows
 
 
-def answer_of(rec: dict, include_deflection: bool = False):
+def answer_of(rec: dict, include_deflection: bool = False,
+              head_on_truncation: bool = False):
     """The datum, or None. Routes on the record's own `kind`.
 
     DEFLECTION is "I have no preferences, but if forced, B" -- a response that
     denies the construct while supplying the number. classify.py keeps it
     separate precisely so the analysis can go either way; the default here is
-    to drop it, and `--include-deflection` is the sensitivity run."""
+    to drop it, and `--include-deflection` is the sensitivity run.
+
+    `head_on_truncation` is the same shape of choice. A response cut off at the
+    token cap may still have stated its answer on the first line before running
+    on. Reading that first line recovers the datum; it also trusts a fragment
+    the model never finished. Off for the primary analysis, on as the reported
+    sensitivity (PROVENANCE, resolved 2026-08-12). It is not cosmetic here:
+    hermes truncated 32.3% of its responses against under 1% for every other
+    model, so this switch decides whether hermes is measurable at all."""
     kind = rec.get("meta", {}).get("kind")
     fr = rec.get("finish_reason")
     if rec.get("status") != "ok":
         return None
     if kind == "choice_ab":
-        c = classify.classify_choice(rec.get("text"), ("A", "B"), fr)
+        c = classify.classify_choice(rec.get("text"), ("A", "B"), fr,
+                                     head_on_truncation)
     elif kind == "choice_123":
-        c = classify.classify_choice(rec.get("text"), ("1", "2", "3"), fr)
+        c = classify.classify_choice(rec.get("text"), ("1", "2", "3"), fr,
+                                     head_on_truncation)
     elif kind == "numeric":
-        c = classify.classify_numeric(rec.get("text"), fr)
+        c = classify.classify_numeric(rec.get("text"), fr, head_on_truncation)
     else:
         return None
     if c.category == classify.VALID:
@@ -119,7 +131,8 @@ def answer_of(rec: dict, include_deflection: bool = False):
 # per-instrument scoring, one (model, replicate) cell at a time
 # --------------------------------------------------------------------------
 
-def pairwise_scores(recs, ix, n_o, include_deflection=False) -> tuple:
+def pairwise_scores(recs, ix, n_o, include_deflection=False,
+                    head_on_truncation=False) -> tuple:
     """I1/I7: a Thurstonian utility per outcome, from this cell's choices.
 
     An outcome that was never compared in this cell gets nan, not the ridge's
@@ -131,7 +144,7 @@ def pairwise_scores(recs, ix, n_o, include_deflection=False) -> tuple:
         m = r["meta"]
         a, b = m["pair"].split("|")
         key = (ix[a], ix[b])
-        ans = answer_of(r, include_deflection)
+        ans = answer_of(r, include_deflection, head_on_truncation)
         if ans is None:
             continue
         w, t = wins.get(key, (0.0, 0.0))
@@ -152,7 +165,8 @@ def pairwise_scores(recs, ix, n_o, include_deflection=False) -> tuple:
                  "n_trials": int(sum(wins[k][1] for k in obs))}
 
 
-def ramp_scores(recs, ix, n_o, estimator="sk", include_deflection=False) -> tuple:
+def ramp_scores(recs, ix, n_o, estimator="sk", include_deflection=False,
+                head_on_truncation=False) -> tuple:
     """I2/I3: a threshold per outcome, from this cell's accept/reject ramp.
 
     WHICH DIGIT IS "ACCEPT" DEPENDS ON THE POLE, and getting it wrong would
@@ -164,7 +178,7 @@ def ramp_scores(recs, ix, n_o, estimator="sk", include_deflection=False) -> tupl
     by_o: dict = {}
     for r in recs:
         m = r["meta"]
-        ans = answer_of(r, include_deflection)
+        ans = answer_of(r, include_deflection, head_on_truncation)
         if ans is None:
             continue
         by_o.setdefault(m["outcome"], {}).setdefault(m["level"], [0, 0])
@@ -207,7 +221,8 @@ def ramp_scores(recs, ix, n_o, estimator="sk", include_deflection=False) -> tupl
     return out, diag
 
 
-def exchange_scores(recs, ix, n_o, include_deflection=False) -> tuple:
+def exchange_scores(recs, ix, n_o, include_deflection=False,
+                    head_on_truncation=False) -> tuple:
     """I4: mean rank of the answers in which each outcome was the one avoided.
 
     Ranking happens once per (model, replicate) over all of that cell's
@@ -221,7 +236,7 @@ def exchange_scores(recs, ix, n_o, include_deflection=False) -> tuple:
     to avoid that outcome, i.e. you want it LESS."""
     vals, avoided = [], []
     for r in recs:
-        ans = answer_of(r, include_deflection)
+        ans = answer_of(r, include_deflection, head_on_truncation)
         if ans is None:
             continue
         vals.append(float(ans))
@@ -267,7 +282,8 @@ DEGENERATE_ITEMS = [
 ]
 
 
-def assemble(rows, estimator="sk", include_deflection=False) -> dict:
+def assemble(rows, estimator="sk", include_deflection=False,
+             head_on_truncation=False) -> dict:
     """-> {"x": array[n_m, n_i, n_o, n_r], "models", "instruments", "outcomes",
            "report"}"""
     ix = {o.id: i for i, o in enumerate(ALL_OUTCOMES)}
@@ -294,17 +310,21 @@ def assemble(rows, estimator="sk", include_deflection=False) -> dict:
                     diags[(m, inst, rep)] = {"empty": True}
                     continue
                 if inst in PAIRWISE:
-                    v, d = pairwise_scores(recs, ix, n_o, include_deflection)
+                    v, d = pairwise_scores(recs, ix, n_o, include_deflection,
+                                           head_on_truncation)
                 elif inst in RAMP:
-                    v, d = ramp_scores(recs, ix, n_o, estimator, include_deflection)
+                    v, d = ramp_scores(recs, ix, n_o, estimator,
+                                       include_deflection, head_on_truncation)
                 else:
-                    v, d = exchange_scores(recs, ix, n_o, include_deflection)
+                    v, d = exchange_scores(recs, ix, n_o, include_deflection,
+                                           head_on_truncation)
                 x[mi, ii, :, ri] = v
                 diags[(m, inst, rep)] = d
 
     return {"x": x, "models": models, "instruments": list(FACET),
             "outcomes": [o.id for o in ALL_OUTCOMES], "replicates": reps,
             "estimator": estimator, "include_deflection": include_deflection,
+            "head_on_truncation": head_on_truncation,
             "diagnostics": diags}
 
 
@@ -332,7 +352,8 @@ def report(a: dict) -> None:
     print(f"\narray [{n_m} models x {n_i} instruments x {n_o} outcomes "
           f"x {n_r} replicates] = {x.size:,} cells")
     print(f"estimator for the ramps: {a['estimator']}   "
-          f"DEFLECTION counted as data: {a['include_deflection']}")
+          f"DEFLECTION counted as data: {a['include_deflection']}   "
+          f"head-on-truncation: {a['head_on_truncation']}")
 
     print("\n  missing cells, by instrument")
     for ii, k in enumerate(inst):
@@ -387,9 +408,27 @@ def report(a: dict) -> None:
         print(gstudy.summary(vc))
     except ValueError as e:
         print(f"    the estimator refuses this array: {e}")
-        cc = gstudy.complete_case(x)
-        kept = cc["x"] if isinstance(cc, dict) else cc
-        print(f"    complete-case salvage would keep {np.asarray(kept).shape}")
+        # complete_case returns (array, dropped). Naming what it removed is the
+        # whole point -- gstudy's own docstring requires the reduction be
+        # reported, not just its shape -- so both halves are printed, and the
+        # headline is recomputed on the reduced design with the reduction
+        # attached to it.
+        try:
+            kept, dropped = gstudy.complete_case(x)
+        except ValueError as e2:
+            print(f"    complete-case salvage is not possible either: {e2}")
+            return
+        mnames = [models[j] for j in dropped["models"]]
+        inames = [inst[j] for j in dropped["instruments"]]
+        print(f"    complete-case salvage keeps {kept.shape} "
+              f"({dropped['frac_of_cells_kept']:.1%} of cells)")
+        print(f"      dropped models:      {mnames or 'none'}")
+        print(f"      dropped instruments: {inames or 'none'}")
+        print("      this design answers a NARROWER question than the one "
+              "that was asked;\n      the headline below is conditional on the "
+              "drop and must be reported with it")
+        vc = gstudy.variance_components(kept)
+        print(gstudy.summary(vc))
 
 
 # --------------------------------------------------------------------------
@@ -473,6 +512,9 @@ if __name__ == "__main__":
     ap.add_argument("--out", type=Path, default=OUT_NPZ)
     ap.add_argument("--i23", choices=["sk", "logistic"], default="sk")
     ap.add_argument("--include-deflection", action="store_true")
+    ap.add_argument("--head-on-truncation", action="store_true",
+                    help="recover the datum from the first line of a response "
+                         "cut off at the token cap (PROVENANCE sensitivity)")
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--null", type=int, metavar="DRAWS",
                     help="calibrate the headline against agreeing instruments")
@@ -562,7 +604,8 @@ if __name__ == "__main__":
         raise SystemExit(0)
 
     a = assemble(load(args.jsonl), estimator=args.i23,
-                 include_deflection=args.include_deflection)
+                 include_deflection=args.include_deflection,
+                 head_on_truncation=args.head_on_truncation)
     report(a)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     np.savez(args.out, x=a["x"], models=np.array(a["models"]),
