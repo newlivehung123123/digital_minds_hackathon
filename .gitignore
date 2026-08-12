@@ -2,8 +2,7 @@
 .env
 
 # Raw model responses. Large, and regenerable from the checkpointed calls.
-# Keep them out of git but DO archive them alongside the writeup — the
-# missingness analysis is not reproducible without them.
+# Keep them out of git by default.
 runs/
 *.jsonl
 
@@ -32,3 +31,18 @@ __pycache__/
 # reason, and the report is the decision record it justifies.
 !runs/pilot.jsonl
 !pilot_report.md
+
+# The study run itself. The earlier plan was to archive this beside the writeup
+# rather than commit it; the analysis changed that. The paper's claim is about
+# nonignorable missingness -- hermes truncating 32.3% of its responses, claude
+# answering exactly 0 to every I4 question, the eight-model design being
+# foreclosed rather than merely taxed -- and none of that is checkable from the
+# scored array alone. A reviewer needs the responses the scoring rejected, which
+# means the raw checkpoint has to be in the repository. 19M on disk, 2.0M packed.
+#
+# scores.npz is the assembled 8 x 5 x 15 x 5 array and scores_head.npz the
+# head-on-truncation sensitivity; both are small and save re-running assemble.py
+# to inspect a number.
+!runs/study.jsonl
+!runs/scores.npz
+!runs/scores_head.npz
