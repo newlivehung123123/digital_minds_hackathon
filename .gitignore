@@ -10,6 +10,10 @@ runs/
 # Resolved slugs and live pricing: machine-generated, and stale within days.
 models_resolved.json
 
+# Run logs and the local resume wrapper: operational, not evidence.
+runs/*.log
+runs/*.sh
+
 # Generated reports
 pilot_report.md
 pilot_summary.csv

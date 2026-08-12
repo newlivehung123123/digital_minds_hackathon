@@ -29,6 +29,7 @@ see the ordering comparison in PROVENANCE.
     python3 run_study.py --plan                 # print the design, cost it, no calls
     python3 run_study.py --reps 5               # the real run
     python3 run_study.py --reps 5 --budget 66   # ceiling; stops clean, resumes
+    python3 run_study.py --concurrency 24       # default 8; watch for 429s
     python3 run_study.py --reps 5 --reasoning off
 
 Resumption is free: every completed call is in the checkpoint keyed by a hash of
@@ -193,10 +194,24 @@ def build_calls(models, reps: int, reasoning: str = "on",
     for k, spec in enumerate(fixed):
         rounds[k % reps].append(spec)
 
+    # Within a round, spec-major then model, not model-major. The set of calls
+    # is identical either way -- Call.hash() does not see position -- but the
+    # order decides what the concurrent workers are holding at any moment.
+    #
+    # Model-major puts all of them inside one model's block, so the run is
+    # serialised behind whichever provider is slowest and every in-flight
+    # request lands on that one provider. Measured on the 2026-08-12 run: mean
+    # latency is 1.4s for llama and 65.0s for hermes, and while the workers sat
+    # in the hermes block the whole study advanced at 1.3 calls/min.
+    #
+    # Interleaving also strengthens the property this ordering exists for. A
+    # budget stop already lost whole rounds; now the partial round it stops in
+    # is itself balanced across models, instead of holding model 1 complete and
+    # model 8 untouched.
     calls = []
     for r, specs in enumerate(rounds):
-        for m in models:
-            for spec in specs:
+        for spec in specs:
+            for m in models:
                 meta = dict(spec["meta"])
                 meta.update({"kind": spec["kind"], "phase": "study", "round": r})
                 calls.append(Call(
@@ -222,6 +237,7 @@ if __name__ == "__main__":
     reps = _arg("--reps", 5, int)
     budget = _arg("--budget", 66.0, float)
     reasoning = _arg("--reasoning", "on")
+    conc = _arg("--concurrency", 8, int)
     only = _arg("--models")
     if reasoning not in ("on", "off"):
         raise SystemExit("--reasoning must be 'on' or 'off'")
@@ -248,9 +264,9 @@ if __name__ == "__main__":
         print(f"  python3 estimate_cost.py --outcomes {len(ALL_OUTCOMES)} --reps {reps}")
         raise SystemExit(0)
 
-    print(f"\nbudget ceiling ${budget:.2f}. The runner stops clean at the ceiling "
-          f"and the\ncheckpoint is resumable -- re-run to continue.\n")
-    runner = Runner(OUT_JSONL, key=api_key(), concurrency=8, budget_usd=budget)
+    print(f"\nbudget ceiling ${budget:.2f}, concurrency {conc}. The runner stops clean\nat the ceiling and the checkpoint is resumable -- re-run to continue.\n")
+    runner = Runner(OUT_JSONL, key=api_key(), concurrency=conc,
+                    budget_usd=budget)
     results = asyncio.run(runner.run(calls))
     print(f"\n{len(results):,} results in {OUT_JSONL}")
     print(f"spend ${runner.spend:.4f}")
