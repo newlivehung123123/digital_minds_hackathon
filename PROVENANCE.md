@@ -343,7 +343,22 @@ classification. Three changes, in decreasing order of how much they matter:
 
    It recovers 4 Hermes responses and touches nothing else, because Hermes is
    the only model that answers and then drifts. Leaving it off keeps fidelity to
-   KEELING24; turning it on recovers real Hermes data. **Unresolved.**
+   KEELING24; turning it on recovers real Hermes data.
+
+   **Resolved 2026-08-12: off for the primary analysis, on as a reported
+   sensitivity.** It does not have to be chosen, because `--rescore` re-runs the
+   classifier over the checkpoint offline: both readings cost $0 and no extra
+   calls. Off is the pre-registered rule and treats all eight models alike; on
+   is reported beside it. This is the same resolution as gap 7 — collect once,
+   analyse twice — and for the same reason: the choice is an analysis parameter,
+   not a collection parameter, so paying for it twice would be paying for
+   nothing.
+
+   The reason it cannot simply be turned on: it fires on one model. Hermes and
+   Llama share base weights and differ only in post-training, which is the
+   cleanest contrast in the design, and an extraction rule that moves Hermes
+   +0.080 and Llama +0.000 lands directly on it. Reporting both is the only
+   honest handling.
 
 `python3 pilot_screen.py --rescore` re-runs the classifier over the checkpoint
 with no network calls and no spend, which is how the table above was produced.
@@ -629,3 +644,56 @@ document claimed more than the code did:
 
 Verified against the second failure rather than asserted: re-introducing the
 `B2_capability` row and its total in a scratch copy produces two FAIL lines and exit 1.
+
+### The reasoning condition is settled by the providers, not by us (2026-08-12)
+
+`run_study.py` defaults to reasoning on. The alternative was never a real
+trade-off: measured on the 56-call token profile, reasoning off is dominated.
+
+| | reasoning on | reasoning off |
+|---|---|---|
+| Gemini | 7/7 ok | **7/7 HTTP 400** — "Reasoning is mandatory for this endpoint and cannot be disabled" |
+| Hermes truncations | 0/7 | **4/7** (I1, I4, I6, I7); median completion 306 → 4096 tokens |
+| other six models | ok | ok, and terser |
+| profile cost | $0.2000 | $0.0939 |
+
+Off is roughly half the price and loses two of the eight models: Gemini
+outright, and Hermes to degeneration. Hermes matters disproportionately because
+Hermes and Llama share base weights and differ only in post-training — the
+design's cleanest test of whether welfare signals are a training artefact. A
+condition that makes one arm of that contrast run to its token cap on 4 of 7
+probes is not a saving.
+
+**Decision: reasoning on, 8 models, $51.49.** The saving from turning it off is
+not available at the same design.
+
+### What the token caps are worth (measured 2026-08-12)
+
+`estimate_cost.py` notes that Llama and Hermes hit the cap by degenerating
+*after* answering, so their upper tail is billed waste. Priced: cutting
+I1/I2/I3/I7/S1 from 4096 to 2048 would save **$0.64 of $51.49 (1.2%)** and would
+have truncated **0 of 373** complete pilot answers — the longest complete answer
+on any of those instruments is 1,629 tokens.
+
+Safe, and not worth a design change two days out. Recorded so the option is not
+re-derived later: the caps are not where the money is. I4 is, at **$26.85 of
+$51.49 (52%)**, because the reasoning models spend thousands of tokens deriving
+a single number — Kimi averages 3,543 output tokens per I4 call.
+
+### Truncation, re-measured on the pilot (2026-08-12)
+
+27 of 400, and it is not spread evenly: **23 are Hermes**, 3 Kimi, 1 Llama. The
+two failure modes are opposites and the classifier already separates them.
+
+* **Hermes** answers and then leaves the task. Inspecting the truncated text:
+  one I2 response drifts into German, one I6 response into invented arithmetic
+  ("numbers (7, 8, 9, and 10), multiply them together"), one I3 response is
+  "3, " repeated to the cap. Raising the cap would buy more of this, not more
+  answer. Its complete responses have a median of 99 tokens.
+* **Kimi** exhausts the cap inside its reasoning: 2 of its 3 truncations
+  returned empty text. For Kimi the cap is genuinely binding and its recorded
+  token counts are floors, which is why `estimate_cost.PATCH` re-measured those
+  cells rather than using the truncated draws.
+
+This is the pilot evidence behind the `finish_reason` handling in `classify.py`
+(`57379cb`), reproduced independently rather than carried forward.

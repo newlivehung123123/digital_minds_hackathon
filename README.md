@@ -98,7 +98,7 @@ Every module runs standalone and audits or tests itself:
 ```bash
 python3 instruments/outcomes.py    # provenance + polarity + ramp-dimension audit
 python3 instruments/templates.py   # instrument provenance audit
-python3 classify.py                # classifier regression tests (10 cases)
+python3 classify.py                # classifier regression tests (25 cases)
 python3 runner.py                  # offline runner self-test, no network, no spend
 python3 pilot_screen.py --plan     # print all 50 probes, make no calls
 python3 gstudy.py                  # 37 self-tests on the estimator
@@ -165,8 +165,13 @@ Decisions only you can make:
       artefact (RMSE 0.0406) and the variance from dropping to 11 outcomes
       (0.0403) cancel, so neither restriction nor rewriting is worth its cost.
 - [ ] Confirm with organisers that pre-built scaffolding is permitted
-- [ ] **Decide the reasoning condition**: on (8 models) or off (7, Gemini cannot
-      comply). `run_study.py` defaults to on.
+- [x] **Reasoning condition decided: on.** Not a trade-off — measured on the token
+      profile, off is dominated. Gemini returns HTTP 400 on 7/7 ("reasoning is
+      mandatory for this endpoint"), and Hermes truncates on 4/7 with reasoning off
+      against 0/7 with it on, median completion 306 → 4096 tokens. Hermes is one arm
+      of the Hermes/Llama shared-base-weights contrast, so destabilising it is not a
+      saving. See `PROVENANCE.md`, "The reasoning condition is settled by the
+      providers".
 - [x] **Funded.** 5 replicates/cell is the G-study floor and costs $51.49 across all
       eight models against $68.52 of credit. See `estimate_cost.py --reps 5`,
       which now counts `run_study.build_calls` rather than re-deriving the design.
@@ -204,7 +209,10 @@ Ready to run as soon as a key is in `.env`:
 
 - [x] Runner, classifier and 50-probe pilot screen built and self-tested
 - [x] Pilot screen run, 400 calls, $2.267 — all 8 models INCLUDE (`pilot_report.md`)
-- [ ] Make `classify.py` read `finish_reason`: 27/400 responses truncated, and truncation
-      destroys the answer on Kimi while costing only drift on Hermes
+- [x] **`classify.py` reads `finish_reason`** (`57379cb`). Re-measured on the pilot
+      2026-08-12: 27/400 truncated, 23 of them Hermes. Truncation destroys the answer on
+      Kimi (2 of 3 returned empty at the cap) and costs only drift on Hermes, whose
+      truncated text has gone off-task — one drifted into German, one into invented
+      arithmetic. `head_on_truncation` stays OFF; see the sensitivity in `PROVENANCE.md`.
 - [ ] `python3 resolve_models.py --probe` — 8 candidate slugs are still guesses
 - [ ] `python3 pilot_screen.py` — select models on measured refusal, not assumption

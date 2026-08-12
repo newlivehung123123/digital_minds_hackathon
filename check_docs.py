@@ -156,6 +156,23 @@ def main() -> int:
            ti.get("CONSTRUCTED", 0), ti.get("LIFTED+CONSTRUCTED", 0)),
           "README.md")
 
+    print("\nSelf-test counts quoted in README")
+    # The README advertises how many cases each self-test runs. That number went
+    # stale once already -- it said classify.py ran 10 cases when it ran 25 --
+    # which is the same drift as the provenance totals, in a place a reader is
+    # even more likely to trust without checking.
+    import subprocess                                               # noqa: PLC0415
+    for mod in ("classify", "gstudy", "score"):
+        m = re.search(rf"python3 {mod}\.py.*?\((\d+) cases\)", readme)
+        if not m:
+            print(f"  --    no case count quoted for {mod}.py")
+            continue
+        out = subprocess.run([sys.executable, f"{mod}.py"], capture_output=True,
+                             text=True, cwd=ROOT).stdout
+        ran = re.findall(r"(\d+)/(\d+) passed", out)
+        check(f"{mod}.py case count", int(m.group(1)),
+              int(ran[-1][1]) if ran else None, "README.md")
+
     print("\nDesign size")
     import run_study                                                # noqa: PLC0415
     eight = [{"key": f"m{i}", "resolved_slug": f"m{i}"} for i in range(8)]
