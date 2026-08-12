@@ -737,3 +737,53 @@ Replicate-major ordering is the real hedge. `run_study.py` emits whole
 replicates in order, so a budget stop loses replicates rather than corrupting
 the crossing, and the `--budget 66` ceiling is a floor under the loss rather
 than a cliff.
+
+### What keeping all eight models would cost (measured 2026-08-12)
+
+The run completed and `gstudy.variance_components` refused the full array: 158
+of 3,000 cells missing, 6 empty. The complete-case reduction drops **hermes,
+claude and llama** and the headline is computed on 5 models x 5 instruments,
+which answers a narrower question than the one asked. So the obvious objection
+is: keep all eight models and give up instruments instead.
+
+It was measured rather than argued. Searching every instrument subset for one
+that is balanced across all eight models leaves exactly one design:
+
+| design | cells | share of the full array |
+|---|---|---|
+| 5 models x 5 instruments x 15 outcomes (complete case) | 1,875 | 62.5% |
+| 8 models x **I1+I7 only** x 7 outcomes | 560 | 18.7% |
+
+No other subset survives. Dropping I4, I2 and I3 is not enough on its own —
+claude still loses 2 cells on I1 and 1 on I7 — so eight of the fifteen outcomes
+go too.
+
+That design is possible and uninformative. Measured headline **0.3346**. Its
+matched null floor, built by slicing the same two instruments and same seven
+outcomes out of synthetic studies where all instruments are driven by one
+planted profile, over 30 draws:
+
+| statistic | value |
+|---|---|
+| median | 0.0000 |
+| mean (sd) | 0.0954 (0.1613) |
+| 95th percentile | **0.450** |
+| percentile of the measured 0.3346 | **90%** |
+
+The null distribution is not symmetric — 16 of 30 draws return exactly zero
+because sigma2(mio) truncates at the floor with only two instruments — so the
+percentile is the statistic to read, not mean + 2sd. The measured value sits
+inside the band. **This is a null result.**
+
+The mechanism is visible in the agreement matrix: I1 and I7 correlate at
+r = 0.986. Forced choice and self-prediction of that same choice are very nearly
+the same instrument, so a design containing only those two asks whether two
+instruments that already agree disagree, on 7 of 15 outcomes, with almost no
+degrees of freedom left to answer with.
+
+The point is not that the eight-model design is worse. It is that **the
+missingness forecloses the eight-model question**, rather than merely taxing it.
+Any design that retains every model retains too little else to detect the
+effect, so the reduction is a finding about the instruments and not a nuisance
+to be analysed around. The primary result stays on the complete-case design
+(0.876 against a matched floor+2sd of 0.405), reported with its drop.
