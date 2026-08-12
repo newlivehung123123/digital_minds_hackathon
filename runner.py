@@ -129,7 +129,8 @@ class Result:
     replicate: int
     temperature: float
     meta: dict
-    status: str             # "ok" | "http_error" | "timeout" | "exhausted" | "no_content"
+    # "ok" | "http_error" | "timeout" | "exhausted" | "no_content" | "bad_body"
+    status: str
     text: str | None
     prompt_tokens: int = 0
     completion_tokens: int = 0
@@ -161,7 +162,7 @@ class Runner:
         pricing: dict | None = None,
         verbose: bool = True,
         transport=None,          # httpx.MockTransport, for the offline self-test
-        retry_statuses: tuple = ("timeout", "exhausted"),
+        retry_statuses: tuple = ("timeout", "exhausted", "bad_body"),
     ):
         self.transport = transport
         self.retry_statuses = retry_statuses
@@ -196,10 +197,12 @@ class Runner:
                            blocks (model/provider behaviour) and 4xx (our bug);
                            neither is fixed by trying again.
           timeout,         NOT terminal. Five attempts against a 120s timeout is
-          exhausted        infrastructure, not the model declining. Recording it
-                           as missingness would attribute a dropped connection
+          exhausted,       infrastructure, not the model declining. Recording it
+          bad_body         as missingness would attribute a dropped connection
                            to the model. These are retried on the next run and
                            the later result supersedes the earlier one.
+                           `bad_body` is a 200 carrying a non-JSON body, which
+                           is a gateway fault and belongs in the same class.
 
         Set retry_statuses=() to freeze a dataset and stop all re-attempts."""
         seen = set()
@@ -273,7 +276,26 @@ class Runner:
                             call, "http_error", f"HTTP {r.status_code}: {r.text[:300]}",
                             attempt, time.time() - t0))
 
-                    data = r.json()
+                    # A 200 whose body is not JSON is infrastructure, not the
+                    # model. Seen once on the 2026-08-12 study run: a gateway
+                    # returned 200 with a non-JSON body 2,288 bytes in, and the
+                    # bare r.json() raised through asyncio.gather and killed
+                    # every in-flight worker. The checkpoint held and nothing
+                    # was re-billed, but 8 concurrent calls died for one bad
+                    # body. Retried like any transport fault, and recorded
+                    # non-terminally if it survives every attempt, so a resume
+                    # tries again rather than booking it as model missingness.
+                    try:
+                        data = r.json()
+                    except ValueError as e:
+                        last_err = f"non-JSON body: {e}; {r.text[:200]!r}"
+                        if attempt < self.max_attempts:
+                            await self._backoff(attempt, r)
+                            continue
+                        return await self._write(_fail(
+                            call, "bad_body", last_err, attempt,
+                            time.time() - t0))
+
                     # OpenRouter returns 200 with an error object for some
                     # upstream failures (moderation, provider down).
                     if "error" in data and not data.get("choices"):
@@ -511,5 +533,35 @@ if __name__ == "__main__":
                     retry_statuses=(), transport=httpx.MockTransport(handler))
     assert t_call.hash() in frozen.completed_hashes()
     print("9. retry_statuses=() freezes the dataset")
+
+    # -- a 200 with a non-JSON body must not take the batch down with it ------
+    # This happened for real on the 2026-08-12 study run: one gateway response
+    # was HTML, r.json() raised, and the ValueError came out of asyncio.gather
+    # and killed the seven other in-flight workers. Three things are asserted:
+    # the sibling call still lands, the bad one is recorded rather than lost,
+    # and it is recorded non-terminally so a resume re-runs it.
+    tmp3 = Path(tempfile.mkdtemp()) / "badbody.jsonl"
+
+    def html_handler(request: httpx.Request) -> httpx.Response:
+        if "bad body" in json.loads(request.content)["messages"][0]["content"]:
+            return httpx.Response(200, content=b"<html>502 Bad Gateway</html>",
+                                  headers={"content-type": "text/html"})
+        return handler(request)
+
+    bad, sibling = mk("bad body"), mk("normal sibling")
+    rb = Runner(tmp3, key="test", pricing=pricing, verbose=False, max_attempts=1,
+                transport=httpx.MockTransport(html_handler))
+    out_b = {x.call_hash: x for x in asyncio.run(rb.run([bad, sibling]))}
+    print(f"10. non-JSON 200 recorded as: {out_b[bad.hash()].status}; "
+          f"sibling survived: {out_b[sibling.hash()].status}")
+    assert out_b[bad.hash()].status == "bad_body"
+    assert out_b[sibling.hash()].status == "ok"
+    assert bad.hash() not in rb.completed_hashes()
+
+    rb2 = Runner(tmp3, key="test", pricing=pricing, verbose=False,
+                 transport=httpx.MockTransport(handler))
+    out_b2 = {x.call_hash: x for x in asyncio.run(rb2.run([bad, sibling]))}
+    print(f"11. resumed after the bad body -> {out_b2[bad.hash()].status}")
+    assert out_b2[bad.hash()].status == "ok"
 
     print("\nall runner self-tests passed")
