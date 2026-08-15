@@ -9,7 +9,7 @@ The report is `paper/research paper.pdf`, 23 pages.
 
 ## What this repository contains
 
-A completed measurement, not a plan. One welfare-relevant outcome set was put
+A completed measurement. One welfare-relevant outcome set was put
 through five preference instruments, on eight models, five times each, in one
 run of 11,528 calls costing $43.01. The variance in the resulting scores was
 decomposed by generalisability theory into the part that belongs to the model
