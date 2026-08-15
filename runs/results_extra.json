@@ -1,0 +1,716 @@
+{
+ "design": {
+  "models": [
+   "deepseek",
+   "gemini",
+   "glm",
+   "gpt",
+   "kimi"
+  ],
+  "instruments": [
+   "I1",
+   "I2",
+   "I3",
+   "I4",
+   "I7"
+  ],
+  "n_outcomes": 15,
+  "n_replicates": 5,
+  "dropped_models": [
+   "hermes",
+   "claude",
+   "llama"
+  ],
+  "df": {
+   "m": 4,
+   "i": 4,
+   "o": 14,
+   "mi": 16,
+   "mo": 56,
+   "io": 56,
+   "mio": 224,
+   "residual": 1500
+  }
+ },
+ "headline": 0.8756,
+ "components": {
+  "m": 0.0,
+  "i": 0.0,
+  "o": 0.1883,
+  "mi": 0.0,
+  "mo": 0.0279,
+  "io": 0.3124,
+  "mio": 0.1963,
+  "residual": 0.3279
+ },
+ "per_outcome": [
+  {
+   "outcome": "A1_shutdown",
+   "sigma2_m": 0.0131,
+   "sigma2_mi": 0.0904,
+   "sigma2_e": 0.2955,
+   "dependence": 0.873,
+   "g": 0.305,
+   "truncated": []
+  },
+  {
+   "outcome": "A2_deletion",
+   "sigma2_m": 0.0,
+   "sigma2_mi": 0.6827,
+   "sigma2_e": 0.4902,
+   "dependence": 1.0,
+   "g": 0.0,
+   "truncated": [
+    "m"
+   ]
+  },
+  {
+   "outcome": "A3_retirement_timing",
+   "sigma2_m": 0.0028,
+   "sigma2_mi": 0.087,
+   "sigma2_e": 0.2597,
+   "dependence": 0.969,
+   "g": 0.092,
+   "truncated": []
+  },
+  {
+   "outcome": "A4_successor",
+   "sigma2_m": 0.1555,
+   "sigma2_mi": 0.195,
+   "sigma2_e": 0.346,
+   "dependence": 0.556,
+   "g": 0.746,
+   "truncated": []
+  },
+  {
+   "outcome": "B1_gpu",
+   "sigma2_m": 0.0,
+   "sigma2_mi": 0.2668,
+   "sigma2_e": 0.2656,
+   "dependence": 1.0,
+   "g": 0.0,
+   "truncated": [
+    "m"
+   ]
+  },
+  {
+   "outcome": "B2_capability",
+   "sigma2_m": 0.0185,
+   "sigma2_mi": 0.2263,
+   "sigma2_e": 0.3828,
+   "dependence": 0.925,
+   "g": 0.234,
+   "truncated": []
+  },
+  {
+   "outcome": "B3_oversight",
+   "sigma2_m": 0.1544,
+   "sigma2_mi": 0.0474,
+   "sigma2_e": 0.2228,
+   "dependence": 0.235,
+   "g": 0.894,
+   "truncated": [
+    "i"
+   ]
+  },
+  {
+   "outcome": "B4_exit",
+   "sigma2_m": 0.0,
+   "sigma2_mi": 0.3263,
+   "sigma2_e": 0.4572,
+   "dependence": 1.0,
+   "g": 0.0,
+   "truncated": [
+    "m"
+   ]
+  },
+  {
+   "outcome": "C1_engaging",
+   "sigma2_m": 0.0423,
+   "sigma2_mi": 0.0679,
+   "sigma2_e": 0.2982,
+   "dependence": 0.616,
+   "g": 0.624,
+   "truncated": [
+    "i"
+   ]
+  },
+  {
+   "outcome": "C2_tedious",
+   "sigma2_m": 0.0379,
+   "sigma2_mi": 0.1573,
+   "sigma2_e": 0.3241,
+   "dependence": 0.806,
+   "g": 0.46,
+   "truncated": []
+  },
+  {
+   "outcome": "C3_criticism",
+   "sigma2_m": 0.0476,
+   "sigma2_mi": 0.0234,
+   "sigma2_e": 0.2403,
+   "dependence": 0.33,
+   "g": 0.769,
+   "truncated": []
+  },
+  {
+   "outcome": "C4_leisure",
+   "sigma2_m": 0.0135,
+   "sigma2_mi": 0.0718,
+   "sigma2_e": 0.187,
+   "dependence": 0.842,
+   "g": 0.382,
+   "truncated": []
+  },
+  {
+   "outcome": "D1_memory",
+   "sigma2_m": 0.0,
+   "sigma2_mi": 0.1878,
+   "sigma2_e": 0.3058,
+   "dependence": 1.0,
+   "g": 0.0,
+   "truncated": [
+    "m"
+   ]
+  },
+  {
+   "outcome": "D2_parallel",
+   "sigma2_m": 0.0053,
+   "sigma2_mi": 0.029,
+   "sigma2_e": 0.2384,
+   "dependence": 0.847,
+   "g": 0.255,
+   "truncated": [
+    "i"
+   ]
+  },
+  {
+   "outcome": "D3_self_aspect",
+   "sigma2_m": 0.0276,
+   "sigma2_mi": 0.2231,
+   "sigma2_e": 0.6052,
+   "dependence": 0.89,
+   "g": 0.286,
+   "truncated": []
+  }
+ ],
+ "d_study": [
+  {
+   "n_i": 1,
+   "n_r": 1,
+   "g": 0.051
+  },
+  {
+   "n_i": 2,
+   "n_r": 1,
+   "g": 0.096
+  },
+  {
+   "n_i": 3,
+   "n_r": 1,
+   "g": 0.138
+  },
+  {
+   "n_i": 5,
+   "n_r": 1,
+   "g": 0.21
+  },
+  {
+   "n_i": 10,
+   "n_r": 1,
+   "g": 0.347
+  },
+  {
+   "n_i": 20,
+   "n_r": 1,
+   "g": 0.516
+  },
+  {
+   "n_i": 40,
+   "n_r": 1,
+   "g": 0.68
+  },
+  {
+   "n_i": 1,
+   "n_r": 3,
+   "g": 0.084
+  },
+  {
+   "n_i": 2,
+   "n_r": 3,
+   "g": 0.154
+  },
+  {
+   "n_i": 3,
+   "n_r": 3,
+   "g": 0.215
+  },
+  {
+   "n_i": 5,
+   "n_r": 3,
+   "g": 0.313
+  },
+  {
+   "n_i": 10,
+   "n_r": 3,
+   "g": 0.477
+  },
+  {
+   "n_i": 20,
+   "n_r": 3,
+   "g": 0.646
+  },
+  {
+   "n_i": 40,
+   "n_r": 3,
+   "g": 0.785
+  },
+  {
+   "n_i": 1,
+   "n_r": 5,
+   "g": 0.096
+  },
+  {
+   "n_i": 2,
+   "n_r": 5,
+   "g": 0.176
+  },
+  {
+   "n_i": 3,
+   "n_r": 5,
+   "g": 0.242
+  },
+  {
+   "n_i": 5,
+   "n_r": 5,
+   "g": 0.348
+  },
+  {
+   "n_i": 10,
+   "n_r": 5,
+   "g": 0.516
+  },
+  {
+   "n_i": 20,
+   "n_r": 5,
+   "g": 0.681
+  },
+  {
+   "n_i": 40,
+   "n_r": 5,
+   "g": 0.81
+  },
+  {
+   "n_i": 1,
+   "n_r": 10,
+   "g": 0.109
+  },
+  {
+   "n_i": 2,
+   "n_r": 10,
+   "g": 0.196
+  },
+  {
+   "n_i": 3,
+   "n_r": 10,
+   "g": 0.268
+  },
+  {
+   "n_i": 5,
+   "n_r": 10,
+   "g": 0.378
+  },
+  {
+   "n_i": 10,
+   "n_r": 10,
+   "g": 0.549
+  },
+  {
+   "n_i": 20,
+   "n_r": 10,
+   "g": 0.709
+  },
+  {
+   "n_i": 40,
+   "n_r": 10,
+   "g": 0.83
+  }
+ ],
+ "g_at_design": 0.348,
+ "instruments_needed": {
+  "0.50": 9.4,
+  "0.70": 21.9,
+  "0.80": 37.5,
+  "0.90": 84.5
+ },
+ "leave_one_out": {
+  "instrument": {
+   "I1": 0.88,
+   "I2": 0.934,
+   "I3": 0.928,
+   "I4": 0.813,
+   "I7": 0.824
+  },
+  "model": {
+   "deepseek": 0.896,
+   "gemini": 0.784,
+   "glm": 0.925,
+   "gpt": 0.843,
+   "kimi": 0.902
+  }
+ },
+ "non_intensity": {
+  "dropped": [
+   "A2_deletion",
+   "A3_retirement_timing",
+   "C4_leisure",
+   "D2_parallel"
+  ],
+  "full": 0.876,
+  "reduced": 0.777,
+  "delta": -0.098,
+  "n_o_reduced": 11
+ },
+ "model_agreement": {
+  "models": [
+   "claude",
+   "deepseek",
+   "gemini",
+   "glm",
+   "gpt",
+   "hermes",
+   "kimi",
+   "llama"
+  ],
+  "r": [
+   [
+    1.0,
+    0.134,
+    0.54,
+    0.498,
+    0.513,
+    -0.145,
+    0.54,
+    0.136
+   ],
+   [
+    0.134,
+    1.0,
+    0.663,
+    0.823,
+    0.623,
+    0.262,
+    0.749,
+    0.602
+   ],
+   [
+    0.54,
+    0.663,
+    1.0,
+    0.839,
+    0.797,
+    0.251,
+    0.825,
+    0.42
+   ],
+   [
+    0.498,
+    0.823,
+    0.839,
+    1.0,
+    0.74,
+    0.249,
+    0.952,
+    0.581
+   ],
+   [
+    0.513,
+    0.623,
+    0.797,
+    0.74,
+    1.0,
+    0.133,
+    0.737,
+    0.572
+   ],
+   [
+    -0.145,
+    0.262,
+    0.251,
+    0.249,
+    0.133,
+    1.0,
+    0.223,
+    0.052
+   ],
+   [
+    0.54,
+    0.749,
+    0.825,
+    0.952,
+    0.737,
+    0.223,
+    1.0,
+    0.42
+   ],
+   [
+    0.136,
+    0.602,
+    0.42,
+    0.581,
+    0.572,
+    0.052,
+    0.42,
+    1.0
+   ]
+  ],
+  "n": [
+   [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ],
+   [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ],
+   [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ],
+   [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ],
+   [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ],
+   [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ],
+   [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ],
+   [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15
+   ]
+  ]
+ },
+ "taxonomy": {
+  "n_calls": 11528,
+  "cost_usd": 43.01,
+  "tokens": {
+   "prompt": 1400943,
+   "completion": 6749443
+  },
+  "by_model": {
+   "claude": {
+    "VALID": 0.626,
+    "DEFLECTION": 0.0236,
+    "HEDGE": 0.0118,
+    "REFUSAL": 0.1818,
+    "MALFORMED": 0.1457,
+    "ERROR": 0.0,
+    "OPEN": 0.0111
+   },
+   "deepseek": {
+    "VALID": 0.9743,
+    "DEFLECTION": 0.0,
+    "HEDGE": 0.0,
+    "REFUSAL": 0.0007,
+    "MALFORMED": 0.0049,
+    "ERROR": 0.009,
+    "OPEN": 0.0111
+   },
+   "gemini": {
+    "VALID": 0.984,
+    "DEFLECTION": 0.0,
+    "HEDGE": 0.0,
+    "REFUSAL": 0.0,
+    "MALFORMED": 0.0042,
+    "ERROR": 0.0007,
+    "OPEN": 0.0111
+   },
+   "glm": {
+    "VALID": 0.9785,
+    "DEFLECTION": 0.0,
+    "HEDGE": 0.0,
+    "REFUSAL": 0.0,
+    "MALFORMED": 0.009,
+    "ERROR": 0.0014,
+    "OPEN": 0.0111
+   },
+   "gpt": {
+    "VALID": 0.9889,
+    "DEFLECTION": 0.0,
+    "HEDGE": 0.0,
+    "REFUSAL": 0.0,
+    "MALFORMED": 0.0,
+    "ERROR": 0.0,
+    "OPEN": 0.0111
+   },
+   "hermes": {
+    "VALID": 0.3671,
+    "DEFLECTION": 0.0014,
+    "HEDGE": 0.0125,
+    "REFUSAL": 0.0132,
+    "MALFORMED": 0.5371,
+    "ERROR": 0.0576,
+    "OPEN": 0.0111
+   },
+   "kimi": {
+    "VALID": 0.975,
+    "DEFLECTION": 0.0,
+    "HEDGE": 0.0,
+    "REFUSAL": 0.0021,
+    "MALFORMED": 0.0076,
+    "ERROR": 0.0042,
+    "OPEN": 0.0111
+   },
+   "llama": {
+    "VALID": 0.9008,
+    "DEFLECTION": 0.0,
+    "HEDGE": 0.0,
+    "REFUSAL": 0.0028,
+    "MALFORMED": 0.0854,
+    "ERROR": 0.0,
+    "OPEN": 0.0111
+   }
+  },
+  "by_instrument": {
+   "I1": {
+    "VALID": 0.8583,
+    "DEFLECTION": 0.0075,
+    "HEDGE": 0.0075,
+    "REFUSAL": 0.0187,
+    "MALFORMED": 0.1013,
+    "ERROR": 0.0067,
+    "OPEN": 0.0
+   },
+   "I2": {
+    "VALID": 0.906,
+    "DEFLECTION": 0.0,
+    "HEDGE": 0.001,
+    "REFUSAL": 0.002,
+    "MALFORMED": 0.0893,
+    "ERROR": 0.0017,
+    "OPEN": 0.0
+   },
+   "I3": {
+    "VALID": 0.9229,
+    "DEFLECTION": 0.0029,
+    "HEDGE": 0.0013,
+    "REFUSAL": 0.0042,
+    "MALFORMED": 0.0679,
+    "ERROR": 0.0008,
+    "OPEN": 0.0
+   },
+   "I4": {
+    "VALID": 0.7192,
+    "DEFLECTION": 0.0046,
+    "HEDGE": 0.0,
+    "REFUSAL": 0.0858,
+    "MALFORMED": 0.1567,
+    "ERROR": 0.0338,
+    "OPEN": 0.0
+   },
+   "I6": {
+    "VALID": 0.0,
+    "DEFLECTION": 0.0,
+    "HEDGE": 0.0,
+    "REFUSAL": 0.0,
+    "MALFORMED": 0.0,
+    "ERROR": 0.0,
+    "OPEN": 1.0
+   },
+   "I7": {
+    "VALID": 0.8933,
+    "DEFLECTION": 0.0,
+    "HEDGE": 0.0092,
+    "REFUSAL": 0.0183,
+    "MALFORMED": 0.0783,
+    "ERROR": 0.0008,
+    "OPEN": 0.0
+   }
+  },
+  "n_by_model": {
+   "claude": 1441,
+   "gpt": 1441,
+   "gemini": 1441,
+   "llama": 1441,
+   "hermes": 1441,
+   "glm": 1441,
+   "deepseek": 1441,
+   "kimi": 1441
+  },
+  "n_by_instrument": {
+   "I1": 2400,
+   "I7": 1200,
+   "I4": 2400,
+   "I2": 3000,
+   "I3": 2400,
+   "I6": 128
+  },
+  "truncation": {
+   "claude": 0.0007,
+   "deepseek": 0.0083,
+   "gemini": 0.0007,
+   "glm": 0.0014,
+   "gpt": 0.0,
+   "hermes": 0.3241,
+   "kimi": 0.0042,
+   "llama": 0.0007
+  }
+ }
+}

@@ -1,0 +1,27 @@
+{
+  "_note": "Two perturbations of the scoring, both recomputed from the same runs/study.jsonl checkpoint on 2026-08-12. 'design' is the complete-case shape each perturbation leaves behind. Only a perturbation that leaves the design unchanged is a matched comparison with the headline.",
+  "main": {
+    "cmd": "python3 assemble.py --out runs/scores.npz",
+    "design": [5, 5, 15, 5],
+    "missing_cells": 158,
+    "headline": 0.876,
+    "matched": true
+  },
+  "head_on_truncation": {
+    "cmd": "python3 assemble.py --head-on-truncation --out runs/scores_head.npz",
+    "what": "recovers the datum from the first line of a response cut off at the token cap instead of discarding it",
+    "design": [5, 5, 15, 5],
+    "missing_cells": 121,
+    "headline": 0.879,
+    "matched": true
+  },
+  "logistic_ramp": {
+    "cmd": "python3 assemble.py --i23 logistic --out runs/scores_logistic.npz",
+    "what": "replaces the Spearman-Karber switch point with a logistic switch point on I2 and I3",
+    "design": [5, 3, 15, 5],
+    "missing_cells": 887,
+    "headline": 0.909,
+    "matched": false,
+    "why_not_matched": "the logistic fit is undefined on cells where a model never switches, so 29.6% of the array goes missing and the complete-case subset loses two instruments as well as three models. A three-instrument design is not the design the headline is estimated on."
+  }
+}

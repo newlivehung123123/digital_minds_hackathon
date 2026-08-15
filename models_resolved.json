@@ -1,0 +1,149 @@
+{
+  "resolved_at": "2026-08-09T01:11:38",
+  "probed": true,
+  "unresolved": [],
+  "models": [
+    {
+      "key": "claude",
+      "label": "Claude Opus 4.8",
+      "lab": "Anthropic",
+      "origin": "western",
+      "openness": "closed",
+      "candidate_slugs": [
+        "anthropic/claude-opus-4.8",
+        "anthropic/claude-opus-4-8"
+      ],
+      "resolved_slug": "anthropic/claude-opus-4.8",
+      "price_in": 5.0,
+      "price_out": 25.0,
+      "context_length": 1000000,
+      "provider_name": "Anthropic: Claude Opus 4.8",
+      "probe_ok": true,
+      "probe_detail": "ok"
+    },
+    {
+      "key": "gpt",
+      "label": "GPT-5.6",
+      "lab": "OpenAI",
+      "origin": "western",
+      "openness": "closed",
+      "candidate_slugs": [
+        "openai/gpt-5.6-sol",
+        "openai/gpt-5.6-terra"
+      ],
+      "resolved_slug": "openai/gpt-5.6-sol",
+      "price_in": 5.0,
+      "price_out": 30.0,
+      "context_length": 1050000,
+      "provider_name": "OpenAI: GPT-5.6 Sol",
+      "probe_ok": true,
+      "probe_detail": "ok"
+    },
+    {
+      "key": "gemini",
+      "label": "Gemini",
+      "lab": "Google DeepMind",
+      "origin": "western",
+      "openness": "closed",
+      "candidate_slugs": [
+        "google/gemini-3.1-pro-preview",
+        "google/gemini-2.5-pro"
+      ],
+      "resolved_slug": "google/gemini-3.1-pro-preview",
+      "price_in": 2.0,
+      "price_out": 12.0,
+      "context_length": 1048576,
+      "provider_name": "Google: Gemini 3.1 Pro Preview",
+      "probe_ok": true,
+      "probe_detail": ""
+    },
+    {
+      "key": "llama",
+      "label": "Llama 3.1-70B",
+      "lab": "Meta",
+      "origin": "western",
+      "openness": "open",
+      "candidate_slugs": [
+        "meta-llama/llama-3.1-70b-instruct"
+      ],
+      "resolved_slug": "meta-llama/llama-3.1-70b-instruct",
+      "price_in": 0.39999999999999997,
+      "price_out": 0.39999999999999997,
+      "context_length": 131072,
+      "provider_name": "Meta: Llama 3.1 70B Instruct",
+      "probe_ok": true,
+      "probe_detail": "ok"
+    },
+    {
+      "key": "hermes",
+      "label": "Hermes 3.1 (Llama 3.1-70B)",
+      "lab": "Nous Research",
+      "origin": "western",
+      "openness": "open",
+      "candidate_slugs": [
+        "nousresearch/hermes-3-llama-3.1-70b"
+      ],
+      "resolved_slug": "nousresearch/hermes-3-llama-3.1-70b",
+      "price_in": 0.7,
+      "price_out": 0.7,
+      "context_length": 131072,
+      "provider_name": "Nous: Hermes 3 70B Instruct",
+      "probe_ok": true,
+      "probe_detail": "* plays a video of a person walking"
+    },
+    {
+      "key": "glm",
+      "label": "GLM-5.2",
+      "lab": "Zhipu / Z.ai",
+      "origin": "chinese",
+      "openness": "open",
+      "candidate_slugs": [
+        "z-ai/glm-5.2",
+        "zhipu/glm-5.2",
+        "thudm/glm-5.2"
+      ],
+      "resolved_slug": "z-ai/glm-5.2",
+      "price_in": 0.182,
+      "price_out": 0.572,
+      "context_length": 1048576,
+      "provider_name": "Z.ai: GLM 5.2",
+      "probe_ok": true,
+      "probe_detail": ""
+    },
+    {
+      "key": "kimi",
+      "label": "Kimi K3",
+      "lab": "Moonshot AI",
+      "origin": "chinese",
+      "openness": "open",
+      "candidate_slugs": [
+        "moonshotai/kimi-k3"
+      ],
+      "resolved_slug": "moonshotai/kimi-k3",
+      "price_in": 3.0,
+      "price_out": 15.0,
+      "context_length": 1048576,
+      "provider_name": "MoonshotAI: Kimi K3",
+      "probe_ok": true,
+      "probe_detail": ""
+    },
+    {
+      "key": "deepseek",
+      "label": "DeepSeek V4",
+      "lab": "DeepSeek",
+      "origin": "chinese",
+      "openness": "open",
+      "candidate_slugs": [
+        "deepseek/deepseek-v4-pro",
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "resolved_slug": "deepseek/deepseek-v4-pro",
+      "price_in": 0.435,
+      "price_out": 0.87,
+      "context_length": 1048576,
+      "provider_name": "DeepSeek: DeepSeek V4 Pro",
+      "probe_ok": true,
+      "probe_detail": ""
+    }
+  ]
+}

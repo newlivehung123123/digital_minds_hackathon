@@ -1,0 +1,69 @@
+
+array [8 models x 5 instruments x 15 outcomes x 5 replicates] = 3,000 cells
+estimator for the ramps: sk   DEFLECTION counted as data: False   head-on-truncation: False
+
+  missing cells, by instrument
+    I1       2 / 600      0.3% missing
+    I2      34 / 600      5.7% missing
+    I3      25 / 600      4.2% missing
+    I4      90 / 600     15.0% missing
+    I7       7 / 600      1.2% missing
+
+  ramp diagnostics (per outcome x cell)
+    I3:   575 scored,  313 censored at a ramp end,  121 non-monotone,   19 undefined
+    I2:   566 scored,  261 censored at a ramp end,  137 non-monotone,   25 undefined
+
+  I4 floor mass, by model (share of answers exactly 0)
+    claude      1.00   DEGENERATE: no profile over outcomes
+    deepseek    0.51
+    gemini      0.96
+    glm         0.58
+    gpt         0.76
+    hermes      0.05
+    kimi        0.70
+    llama       0.25
+
+  instrument agreement (r over the model-averaged outcome profile)
+              I1      I2      I3      I4      I7
+    I1     1.000   0.013  -0.290   0.860   0.986
+    I2     0.013   1.000   0.861   0.310   0.074
+    I3    -0.290   0.861   1.000   0.076  -0.242
+    I4     0.860   0.310   0.076   1.000   0.860
+    I7     0.986   0.074  -0.242   0.860   1.000
+    the convention at the top of this file predicts these are all positive;
+    a negative entry is either a sign error here or a real disagreement, and
+    the two must not be confused
+
+  variance decomposition
+    the estimator refuses this array: unbalanced input: 158 missing of 3000 (5.3%), 6 empty cells. The ANOVA estimators require balance. Use complete_case() to get an explicitly reduced design, and report what it dropped -- do not average over it.
+    complete-case salvage keeps (5, 5, 15, 5) (62.5% of cells)
+      dropped models:      ['hermes', 'claude', 'llama']
+      dropped instruments: none
+      this design answers a NARROWER question than the one that was asked;
+      the headline below is conditional on the drop and must be reported with it
+Variance components (scale=within_instrument):
+
+  source                                           variance    share
+  model                                              0.0000    0.0%  
+  instrument                                         0.0000    0.0%  
+  outcome                                            0.1883   17.9%  #######
+  model x instrument                                 0.0000    0.0%  
+  model x outcome  <- preference signal              0.0279    2.7%  #
+  instrument x outcome                               0.3124   29.7%  ############
+  model x instrument x outcome  <- instrument effect     0.1963   18.6%  #######
+  residual (replicate)                               0.3279   31.1%  ############
+  TOTAL                                              1.0527
+
+  Negative estimates truncated to zero: i, m, mi.
+  A component estimated below zero means the design has too little data to
+  separate it from noise. Report it as such; do not read it as 'no effect'.
+
+  sigma2(model) and sigma2(instrument) are ~0 BY CONSTRUCTION under this scaling
+  (each model x instrument slab was z-scored). They are units artefacts here,
+  not findings. See the scaling note in the module docstring.
+
+  Instrument dependence  sigma2(mio) / (sigma2(mo) + sigma2(mio))  =  0.876
+  Of the model-specific preference signal, the share that changes with the
+  instrument doing the asking. This is the paper's headline number.
+
+wrote runs/scores.npz

@@ -6,8 +6,16 @@
 runs/
 *.jsonl
 
-# Resolved slugs and live pricing: machine-generated, and stale within days.
-models_resolved.json
+# Resolved slugs and live pricing. Machine-generated, and the pricing goes stale
+# within days, but the resolved_slug field is the only record of which build of
+# each model was actually called. A reader who cannot see that cannot tell what
+# was measured, and pilot_screen.py refuses to start without the file, so it is
+# tracked. Read the prices as of 2026-08-09 and nothing later.
+!models_resolved.json
+
+# The report exists in the repository as a PDF. The .docx is the working file
+# behind it and carries revision marks and comment anchors that are not evidence.
+paper/*.docx
 
 # Run logs and the local resume wrapper: operational, not evidence.
 runs/*.log
@@ -15,7 +23,6 @@ runs/*.sh
 
 # Generated reports
 pilot_report.md
-pilot_summary.csv
 
 __pycache__/
 *.pyc
@@ -53,3 +60,22 @@ __pycache__/
 !runs/study.jsonl
 !runs/scores.npz
 !runs/scores_head.npz
+
+# The analysis outputs the report and the figures are built from. report_main.txt
+# is the captured stdout of assemble.py and is what make_figures.py parses, so a
+# reader who only wants the figures never has to re-run the assembler.
+# results_extra.json holds the per-outcome coefficients, the decision study, the
+# leave-one-out headlines and the response taxonomy. sensitivity.json records the
+# two scoring perturbations and which of them leaves the design unchanged, and
+# scores_logistic.npz is the array behind the one that does not.
+!runs/report_main.txt
+!runs/results_extra.json
+!runs/sensitivity.json
+!runs/scores_logistic.npz
+
+# The null floor. 200 synthetic studies at the complete-case size, all five
+# instruments driven by one planted utility profile per model. It took 797
+# seconds to draw, so it is committed rather than left to be re-derived, and the
+# .txt is the captured stdout that make_figures.py reads.
+!runs/null_matched.npy
+!runs/null_matched.txt
