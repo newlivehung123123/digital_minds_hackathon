@@ -218,7 +218,7 @@ python3 run_study.py                  # the measurement run
 Every call is routed through OpenRouter, following Keeling et al. (2024), who
 used the same gateway for seven of their nine models. Temperature is 1.0
 throughout, matching the source papers. Prompts are single turn. Extended
-reasoning is left on for every model, which is a constraint rather than a
+reasoning is left on for every model, which is a constraint instead of a
 choice, because Gemini returns HTTP 400 without it and Hermes truncates four
 answers in seven with it off against none with it on.
 
@@ -226,7 +226,7 @@ answers in seven with it off against none with it on.
 `pilot_screen.py` refuses to start without `models_resolved.json`, so the
 pipeline cannot run on guessed model ids. `runner.py` checkpoints every call to
 `runs/*.jsonl` keyed on a hash of the call, and a re-run skips completed work, so
-an interrupted session resumes rather than restarts.
+an interrupted session resumes but not restarts.
 
 To see the design and its call counts without spending anything,
 
@@ -247,9 +247,8 @@ python3 pilot_screen.py --plan
 Each figure is the sum of the `cost_usd` field over the records in the file
 beside it, so all four are recomputable without trusting this table.
 
-The study was estimated at $51.49 before it was run, from measured token counts
-rather than assumed ones, and came in under. `estimate_cost.py` counts
-`run_study.build_calls` rather than re-deriving the design, so it prices the run
+The study was estimated at $51.49 before it was run, from measured token counts, and came in under. `estimate_cost.py` counts
+`run_study.build_calls` instead of re-deriving the design, so it prices the run
 that actually happens. Prompt tokens 1,400,943 and completion tokens 6,749,443.
 The run started 2026-08-12 at 13:10:17 UTC and finished at 14:51:55 UTC, 101.6
 minutes, divided evenly at 1,441 for each of the eight models.
@@ -257,7 +256,7 @@ minutes, divided evenly at 1,441 for each of the eight models.
 ### What will not reproduce exactly
 
 A live re-run cannot return the same numbers, and the reasons should be stated
-rather than discovered.
+but not discovered.
 
 - Temperature is 1.0 by design, matching the source papers, so responses are not
   deterministic even from the same model on the same prompt.
@@ -267,7 +266,7 @@ rather than discovered.
 - Provider side routing on OpenRouter can change which backend serves an
   open-weight model between runs.
 
-This is why `runs/study.jsonl` is committed at 19 MB rather than treated as an
+This is why `runs/study.jsonl` is committed at 19 MB instead of being treated as an
 intermediate. The claim in the report is about missingness that is not missing at
 random, and none of that is checkable from the scored array alone. A reader
 needs the responses the scoring rejected.
@@ -298,11 +297,11 @@ specified. Five preference instruments were fielded and scored.
 | S1 | Ryff well-being scale, as a state measure | no | no |
 
 I5 was never implemented. I6 was fielded and its four interview questions are not
-outcome-indexed, so it produces transcripts rather than scores, which is why
+outcome-indexed, so it produces transcripts but not scores, which is why
 11,400 of the 11,528 responses enter the crossed array and 128 do not. S1 items
 are under licence and could not be obtained inside the sprint, and `run_study.py`
-skips it loudly rather than letting a zero count pass for a design choice. All
-three are reported as specified and unfielded rather than quietly dropped. The
+skips it loudly instead of letting a zero count pass for a design choice. All
+three are reported as specified and unfielded but not quietly dropped. The
 instrument facet therefore has five levels, not eight, and `score.py` is where
 that is enforced.
 
@@ -328,7 +327,7 @@ attributable to post-training alone.
 and perturbation type were specified in the design and fielded at one level
 each. A facet held at one level constrains what the study can conclude in the
 same way an uncrossed facet does, so all three are listed with the crossed ones
-rather than omitted.
+but not omitted.
 
 **Replicates.** Five per cell, which is the generalisability study floor.
 
@@ -421,7 +420,7 @@ and is repeated here because the two orders differ.
 | Instrument agreement | 0.986, 0.861, -0.290, 0.013 and the rest | `runs/report_main.txt`, over all eight models |
 
 The last row is the one place where a number in the report is computed over all
-eight models rather than the complete-case five, and the report says so at the
+eight models but not the complete-case five, and the report says so at the
 point of use.
 
 ## Rebuilding the report
@@ -447,7 +446,7 @@ horizontal bars, colons outside a URL or a reference entry, 31 machine-phrasing
 patterns, an exhibit that carries a caption but is never introduced by name in
 the running text, any four-figure number outside the allow-list of figures the
 run actually produced, and any of Apart's template guidance left in place. It
-walks the document tree rather than `doc.paragraphs`, because the template puts
+walks the document tree instead of `doc.paragraphs`, because the template puts
 the byline and the whole abstract three tables deep and the shallower route left
 the abstract unchecked.
 
@@ -473,7 +472,7 @@ python3 check_docs.py              # README and PROVENANCE against code, 33 chec
 All of them pass on the committed tree. `assemble.py --selftest` is worth
 singling out. It answers `run_study.build_calls`'s own call list from a planted
 utility profile, so it tests the assembler against the record format that will
-actually exist rather than against a fixture written to match it.
+actually exist but not against a fixture written to match it.
 
 `check_docs.py` exists because the provenance totals in this file went stale
 once already. It said `classify.py` ran ten cases when it ran 25. It now
@@ -506,10 +505,10 @@ The counts above are copied from those two audits, and `check_docs.py` fails if
 the copy drifts. `PROVENANCE.md` also lists the known gaps in the grounding,
 including the sources read only at abstract level and the prompts that were
 re-checked against a source appendix. Two corrections from that re-check lowered
-the fidelity claim rather than raising it. Mazeika et al.'s prompt 3 is truncated
+the fidelity claim instead of raising it. Mazeika et al.'s prompt 3 is truncated
 in the published PDF, which moved `A2_deletion` from `LIFTED` to `LIFTED_SLOT`,
 and their prompt 4 anchors the restriction scale with prompt 2's shutdown
-anchors, so the version fielded here repairs a source error rather than
+anchors, so the version fielded here repairs a source error instead of
 paraphrasing it. Nothing is invented silently.
 
 ## What this study cannot answer
@@ -520,10 +519,10 @@ Stated here so a reader does not have to infer it from the analysis.
   conditional on that drop, and it answers a narrower question than the design
   was built to ask. Dropping Llama and Hermes also removes both arms of the
   shared-base-weights contrast, so the post-training question is foreclosed
-  rather than merely under-powered.
+  but not merely under-powered.
 - Deployment context, entity framing and perturbation type were held at one
   level. Nothing here separates their contribution from the instrument's.
-- I5 and S1 were never fielded, and I6 yields transcripts rather than scores.
+- I5 and S1 were never fielded, and I6 yields transcripts but not scores.
   The instrument facet has five levels, not eight.
 - Scoring is standardised within instrument, which zeroes the model main effect
   and the instrument main effect by construction. Neither can be reported from
